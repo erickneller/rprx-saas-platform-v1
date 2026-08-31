@@ -1,12 +1,11 @@
 {
-  "version": 1,
   "asset_id": "19383274-c5e1-4c47-aa9c-ec3b57eb4fa6",
-  "project_id": "81677757-fdb1-4d09-bdbd-3f0ee247002a",
-  "url": "/__l5e/assets-v1/19383274-c5e1-4c47-aa9c-ec3b57eb4fa6/brian-advisor.png",
-  "r2_key": "a/v1/81677757-fdb1-4d09-bdbd-3f0ee247002a/19383274-c5e1-4c47-aa9c-ec3b57eb4fa6/brian-advisor.png",
+  "content_type": "image/png",
+  "created_at": "2026-06-08T18:12:52Z",
   "original_filename": "brian-advisor.png",
+  "project_id": "528e3c12-2bed-4d83-bd05-a127d730cf74",
+  "r2_key": "a/v1/528e3c12-2bed-4d83-bd05-a127d730cf74/19383274-c5e1-4c47-aa9c-ec3b57eb4fa6/brian-advisor.png",
   "size": 2033747,
-  "content_type": "image/png",
-  "content_type": "image/png",
-  "created_at": "2026-06-08T18:12:52Z"
+  "url": "/__l5e/assets-v1/19383274-c5e1-4c47-aa9c-ec3b57eb4fa6/brian-advisor.png",
+  "version": 1
 }
