@@ -12,6 +12,8 @@ import { PhysicalSnapshotReport } from '@/components/health-assessment/PhysicalS
 import { AuthenticatedLayout } from '@/components/layout/AuthenticatedLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useHealthAssessments } from '@/hooks/useHealthAssessmentHistory';
+import { NetlifyAssessmentShell } from '@/components/rprx-assessments/NetlifyAssessmentShell';
+import { physicalAssessmentMeta, physicalQuestions, physicalSections } from '@/lib/rprx-assessments';
 
 const isEmbedded = () => {
   if (typeof window === 'undefined') return false;
@@ -24,6 +26,7 @@ const HealthAssessment = () => {
   const reset = useAssessmentStore((s) => s.reset);
   const rootRef = useRef<HTMLDivElement>(null);
   const [searchParams] = useSearchParams();
+  const useNetlifyEngine = searchParams.get('engine') === 'netlify';
   const mode = searchParams.get('mode'); // 'view' | 'edit' | null (new)
   const { data: healthAssessments = [] } = useHealthAssessments();
   const saved = healthAssessments[0];
@@ -105,6 +108,27 @@ const HealthAssessment = () => {
 
   const { user } = useAuth();
   const embedded = isEmbedded();
+
+  if (useNetlifyEngine) {
+    const netlifyContent = (
+      <NetlifyAssessmentShell
+        mode="physical"
+        title={physicalAssessmentMeta.label}
+        eyebrow={physicalAssessmentMeta.eyebrow}
+        subtitle="A lightweight yes/no wellness snapshot that keeps the Netlify flow: mind and mood, body and movement, conditions, prevention and recovery, and preferred support path. No detailed medical records required."
+        disclaimer={physicalAssessmentMeta.disclaimer}
+        sections={physicalSections}
+        questions={physicalQuestions}
+        onExit={() => window.history.back()}
+      />
+    );
+
+    if (!embedded && user) {
+      return <AuthenticatedLayout title="Health Assessment">{netlifyContent}</AuthenticatedLayout>;
+    }
+
+    return netlifyContent;
+  }
 
   const content = (
     <div ref={rootRef}>

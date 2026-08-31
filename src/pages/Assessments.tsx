@@ -1,6 +1,7 @@
 import { AuthenticatedLayout } from '@/components/layout/AuthenticatedLayout';
 import { AssessmentHistory } from '@/components/dashboard/AssessmentHistory';
 import { HealthAssessmentHistory } from '@/components/dashboard/HealthAssessmentHistory';
+import { NetlifyAssessmentHistory } from '@/components/dashboard/NetlifyAssessmentHistory';
 import { StartAssessmentCTA } from '@/components/dashboard/StartAssessmentCTA';
 import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
 import { Loader2 } from 'lucide-react';
@@ -18,6 +19,10 @@ export default function Assessments() {
         ) : (
           <>
             <StartAssessmentCTA isFirstTime={assessments.length === 0} />
+            <section className="space-y-3">
+              <h2 className="text-lg font-semibold text-foreground">Imported Netlify Assessment Engine</h2>
+              <NetlifyAssessmentHistory />
+            </section>
             <section className="space-y-3">
               <h2 className="text-lg font-semibold text-foreground">Financial Assessments</h2>
               <AssessmentHistory />
