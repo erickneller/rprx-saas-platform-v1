@@ -2,12 +2,15 @@
 // To take ownership, delete this banner line; the plugin then leaves the file alone.
 // supabase function: mcp
 // Bundled from src/lib/mcp/index.ts by @lovable.dev/mcp-js.
+// <define:import.meta.env>
+var define_import_meta_env_default = { MODE: "production", BASE_URL: "/", DEV: false, PROD: true, SSR: false };
+
 // src/lib/mcp/index.ts
-import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.22.2";
+import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.22.0";
 
 // src/lib/mcp/tools/get-profile.ts
 import { createClient } from "npm:@supabase/supabase-js@^2.93.1";
-import { defineTool } from "npm:@lovable.dev/mcp-js@0.22.2";
+import { defineTool } from "npm:@lovable.dev/mcp-js@0.22.0";
 function supabaseForUser(ctx) {
   return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
     global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
@@ -35,7 +38,7 @@ var get_profile_default = defineTool({
 
 // src/lib/mcp/tools/list-assessments.ts
 import { createClient as createClient2 } from "npm:@supabase/supabase-js@^2.93.1";
-import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.22.2";
+import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.22.0";
 import { z } from "npm:zod@^3.25.76";
 function supabaseForUser2(ctx) {
   return createClient2(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
@@ -66,7 +69,7 @@ var list_assessments_default = defineTool2({
 
 // src/lib/mcp/tools/list-saved-plans.ts
 import { createClient as createClient3 } from "npm:@supabase/supabase-js@^2.93.1";
-import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.22.2";
+import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.22.0";
 import { z as z2 } from "npm:zod@^3.25.76";
 function supabaseForUser3(ctx) {
   return createClient3(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
@@ -99,7 +102,7 @@ var list_saved_plans_default = defineTool3({
 
 // src/lib/mcp/tools/list-debts.ts
 import { createClient as createClient4 } from "npm:@supabase/supabase-js@^2.93.1";
-import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.22.2";
+import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.22.0";
 function supabaseForUser4(ctx) {
   return createClient4(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
     global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
@@ -126,7 +129,7 @@ var list_debts_default = defineTool4({
 });
 
 // src/lib/mcp/index.ts
-var projectRef = "wkzgjvnpnhyluxvclymh";
+var projectRef = define_import_meta_env_default.VITE_SUPABASE_PROJECT_ID ?? "project-ref-unset";
 var mcp_default = defineMcp({
   name: "rprx-4-life-mcp",
   title: "RPRx 4 Life",
@@ -140,5 +143,5 @@ var mcp_default = defineMcp({
 });
 
 // lovable-mcp-supabase-entry.ts
-import { createSupabaseHandler } from "npm:@lovable.dev/mcp-js@0.22.2/stacks/supabase";
+import { createSupabaseHandler } from "npm:@lovable.dev/mcp-js@0.22.0/stacks/supabase";
 Deno.serve(createSupabaseHandler(mcp_default, { functionName: "mcp" }));
