@@ -124,6 +124,15 @@ export function useNetlifyAssessmentPersistence() {
       queryClient.invalidateQueries({ queryKey: ['healthAssessments'] });
       queryClient.invalidateQueries({ queryKey: ['assessmentHistory'] });
       if (data?.previewOnly) return;
+      supabase.functions.invoke('ghl-sync', {
+        body: {
+          source: 'netlify-assessment-result',
+          assessmentResultId: data.id,
+          changedKeys: ['latest_netlify_assessment'],
+        },
+      }).catch((err) => {
+        console.warn('Netlify assessment GHL sync skipped/failed:', err);
+      });
       toast({ title: 'Assessment result saved' });
     },
     onError: () => {

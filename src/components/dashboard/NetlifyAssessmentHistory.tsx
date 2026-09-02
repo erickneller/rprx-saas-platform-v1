@@ -21,21 +21,21 @@ export function NetlifyAssessmentHistory() {
           <div>
             <div className="mb-1 flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
-              <h3 className="font-semibold text-foreground">Netlify-style assessment previews</h3>
+              <h3 className="font-semibold text-foreground">RPRx assessment results</h3>
             </div>
             <p className="text-sm text-muted-foreground">
-              New imported financial/physical engine results saved to the additive preview table.
+              Imported financial/physical engine results saved to the Lovable/Supabase app.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button asChild size="sm" variant="outline"><Link to="/assessment?engine=netlify">Financial preview</Link></Button>
-            <Button asChild size="sm" variant="outline"><Link to="/health-assessment?engine=netlify">Physical preview</Link></Button>
+            <Button asChild size="sm" variant="outline"><Link to="/assessment">Financial assessment</Link></Button>
+            <Button asChild size="sm" variant="outline"><Link to="/health-assessment">Physical assessment</Link></Button>
           </div>
         </div>
 
         {results.length === 0 ? (
           <div className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">
-            No Netlify-style preview results saved yet. Complete one of the preview assessments above after the migration is applied.
+            No imported assessment results saved yet. Complete one of the assessments above after signing in.
           </div>
         ) : (
           <div className="space-y-3">

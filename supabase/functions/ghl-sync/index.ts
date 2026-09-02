@@ -42,6 +42,15 @@ function applyTransform(value: unknown, transform: string): unknown {
   }
 }
 
+function compactTitles(items: unknown, max = 8): string {
+  if (!Array.isArray(items)) return "";
+  return items
+    .map((item: any) => String(item?.title ?? item?.name ?? item?.topic ?? "").trim())
+    .filter(Boolean)
+    .slice(0, max)
+    .join(" | ");
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -72,14 +81,10 @@ Deno.serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     const dryRun: boolean = !!body?.dryRun;
+    const assessmentResultId = typeof body?.assessmentResultId === "string" ? body.assessmentResultId : null;
 
     const GHL_API_KEY = Deno.env.get("GHL_API_KEY");
     const GHL_LOCATION_ID = Deno.env.get("GHL_LOCATION_ID");
-    if (!GHL_API_KEY || !GHL_LOCATION_ID) {
-      return new Response(JSON.stringify({ error: "GHL integration not configured" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const service = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -99,6 +104,24 @@ Deno.serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
+    let netlifyQuery = (service
+      .from("rprx_netlify_assessment_results") as any)
+      .select("id, assessment_type, matches, free_matches, locked_matches, top_match_name, completed_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (assessmentResultId) {
+      netlifyQuery = (service
+        .from("rprx_netlify_assessment_results") as any)
+        .select("id, assessment_type, matches, free_matches, locked_matches, top_match_name, completed_at")
+        .eq("user_id", user.id)
+        .eq("id", assessmentResultId)
+        .limit(1);
+    }
+
+    const { data: latestNetlifyAssessment } = await netlifyQuery.maybeSingle();
+
     // Load mappings
     const { data: mappings } = await service
       .from("ghl_field_mappings").select("*").eq("is_active", true).order("sort_order");
@@ -111,6 +134,15 @@ Deno.serve(async (req) => {
       secondary_horseman: latestAssessment?.secondary_horseman ?? null,
       readiness_label: latestAssessment?.readiness_label ?? null,
       recommended_track: latestAssessment?.recommended_track ?? null,
+      latest_netlify_assessment_id: latestNetlifyAssessment?.id ?? null,
+      latest_netlify_assessment_type: latestNetlifyAssessment?.assessment_type ?? null,
+      latest_netlify_top_match: latestNetlifyAssessment?.top_match_name ?? null,
+      latest_netlify_match_count: Array.isArray(latestNetlifyAssessment?.matches) ? latestNetlifyAssessment.matches.length : null,
+      latest_netlify_free_match_count: Array.isArray(latestNetlifyAssessment?.free_matches) ? latestNetlifyAssessment.free_matches.length : null,
+      latest_netlify_locked_match_count: Array.isArray(latestNetlifyAssessment?.locked_matches) ? latestNetlifyAssessment.locked_matches.length : null,
+      latest_netlify_free_matches: compactTitles(latestNetlifyAssessment?.free_matches, 5),
+      latest_netlify_locked_matches: compactTitles(latestNetlifyAssessment?.locked_matches, 10),
+      latest_netlify_completed_at: latestNetlifyAssessment?.completed_at ?? null,
     };
 
     const standardFields: Record<string, unknown> = {};
@@ -144,6 +176,12 @@ Deno.serve(async (req) => {
     if (dryRun) {
       return new Response(JSON.stringify({ success: true, dryRun: true, payload: ghlPayload }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (!GHL_API_KEY || !GHL_LOCATION_ID) {
+      return new Response(JSON.stringify({ error: "GHL integration not configured" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const ghlResponse = await fetch(`${GHL_API_BASE}/contacts/upsert`, {

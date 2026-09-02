@@ -26,7 +26,8 @@ const HealthAssessment = () => {
   const reset = useAssessmentStore((s) => s.reset);
   const rootRef = useRef<HTMLDivElement>(null);
   const [searchParams] = useSearchParams();
-  const useNetlifyEngine = searchParams.get('engine') === 'netlify';
+  const engine = searchParams.get('engine');
+  const useNetlifyEngine = engine !== 'legacy' && engine !== 'lovable';
   const mode = searchParams.get('mode'); // 'view' | 'edit' | null (new)
   const { data: healthAssessments = [] } = useHealthAssessments();
   const saved = healthAssessments[0];
@@ -115,7 +116,7 @@ const HealthAssessment = () => {
         mode="physical"
         title={physicalAssessmentMeta.label}
         eyebrow={physicalAssessmentMeta.eyebrow}
-        subtitle="A lightweight yes/no wellness snapshot that keeps the Netlify flow: mind and mood, body and movement, conditions, prevention and recovery, and preferred support path. No detailed medical records required."
+        subtitle="A lightweight yes/no wellness snapshot that starts with a short set of questions, then shows follow-ups only when relevant: mind and mood, body and movement, conditions, prevention and recovery, and preferred support path. No detailed medical records required."
         disclaimer={physicalAssessmentMeta.disclaimer}
         sections={physicalSections}
         questions={physicalQuestions}
