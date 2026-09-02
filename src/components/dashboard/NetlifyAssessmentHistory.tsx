@@ -35,7 +35,7 @@ export function NetlifyAssessmentHistory() {
 
         {results.length === 0 ? (
           <div className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">
-            No imported assessment results saved yet. Complete one of the assessments above after signing in.
+            No RPRx assessment results saved yet. Complete one of the assessments above after signing in.
           </div>
         ) : (
           <div className="space-y-3">

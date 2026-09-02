@@ -87,7 +87,7 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
             <p className="mt-4 max-w-3xl text-lg text-[#496271]">
               {matches.length
                 ? `Your answers surfaced ${matches.length} relevant ${mode === 'financial' ? 'strategy areas' : 'wellness topics'}. The first three are unlocked in the free report; the rest become your member/library path.`
-                : 'No priority areas were triggered yet. Go back and answer any skipped questions to complete the snapshot.'}
+                : 'No priority areas were triggered from this answer pattern. If something important is missing, go back and update any answers before sharing this snapshot.'}
             </p>
           </div>
 
@@ -126,7 +126,7 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
                   <Lock className="mb-4 h-8 w-8 text-[#f3cf6b]" />
                   <h3 className="font-serif text-2xl font-semibold">Unlock the full RPRx library</h3>
                   <p className="mt-2 text-white/75">
-                    The locked list keeps the Netlify free-vs-member feel while the Lovable app remains the owner of auth, subscriptions, saved plans, and partner routing.
+                    Members can unlock the full library path, save priorities to a plan, and get routed to the right next step based on these results.
                   </p>
                 </CardContent>
               </Card>
@@ -158,7 +158,7 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
           </Button>
           <div className="rounded-full border border-[#d9cfbd] bg-white px-4 py-2 text-sm font-semibold text-[#496271]">
-            {progress.answered} of {progress.total} answered
+            {progress.answered} answered
           </div>
         </div>
 
@@ -223,7 +223,7 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
         <div className="mt-8 rounded-[1.5rem] border border-[#d9cfbd] bg-white p-5 shadow-sm md:flex md:items-center md:justify-between md:gap-6">
           <div>
             <p className="font-semibold text-[#193247]">
-              {progress.complete ? `${matches.length} ${mode === 'financial' ? 'strategy areas' : 'wellness topics'} ready.` : `${progress.left} questions left to complete this snapshot.`}
+              {progress.complete ? `${matches.length} ${mode === 'financial' ? 'strategy areas' : 'wellness topics'} ready.` : `${progress.left} remaining visible questions to complete this snapshot.`}
             </p>
             <p className="mt-1 text-sm text-[#496271]">{disclaimer}</p>
           </div>

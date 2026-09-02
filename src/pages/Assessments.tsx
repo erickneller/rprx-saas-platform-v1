@@ -20,7 +20,7 @@ export default function Assessments() {
           <>
             <StartAssessmentCTA isFirstTime={assessments.length === 0} />
             <section className="space-y-3">
-              <h2 className="text-lg font-semibold text-foreground">Imported Netlify Assessment Engine</h2>
+              <h2 className="text-lg font-semibold text-foreground">RPRx Assessment Results</h2>
               <NetlifyAssessmentHistory />
             </section>
             <section className="space-y-3">
