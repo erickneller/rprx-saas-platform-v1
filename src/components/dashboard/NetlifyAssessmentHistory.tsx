@@ -24,7 +24,7 @@ export function NetlifyAssessmentHistory() {
               <h3 className="font-semibold text-foreground">RPRx assessment results</h3>
             </div>
             <p className="text-sm text-muted-foreground">
-              Imported financial/physical engine results saved to the Lovable/Supabase app.
+              Financial and physical RPRx results saved to your account and ready for your next plan step.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">

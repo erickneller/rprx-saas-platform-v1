@@ -75,7 +75,7 @@ function planInputForMatch({ mode, match }: AddPlanInput): CreatePlanInput {
         'Do not treat an educational wellness match as medical diagnosis or treatment.',
       ],
     },
-    notes: `Added from Netlify-style ${mode} assessment preview.`,
+    notes: `Added from the RPRx ${mode} assessment.`,
   };
 }
 
