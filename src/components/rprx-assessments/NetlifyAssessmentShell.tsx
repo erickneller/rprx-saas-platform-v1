@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Lock, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -42,7 +43,8 @@ function reasonLabel(match: FinancialTheme | PhysicalQuestionMatch) {
 export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclaimer, sections, questions, onExit }: Props) {
   const [answers, setAnswers] = useState<AnswerMap>({});
   const [submitted, setSubmitted] = useState(false);
-  const [savedPlanIds, setSavedPlanIds] = useState<Set<string>>(() => new Set());
+  const [savedPlanIds, setSavedPlanIds] = useState<Record<string, string>>({});
+  const navigate = useNavigate();
   const { saveResult, addPlan } = useNetlifyAssessmentPersistence();
 
   const visible = useMemo(() => visibleQuestions(questions, answers), [questions, answers]);
@@ -68,8 +70,15 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
   };
 
   const handleAddPlan = async (match: FinancialTheme | PhysicalQuestionMatch) => {
+    const existingPlanId = savedPlanIds[match.id];
+    if (existingPlanId) {
+      navigate(`/plans/${existingPlanId}`);
+      return;
+    }
+
     const saved = await addPlan.mutateAsync({ mode, match });
-    setSavedPlanIds((current) => new Set(current).add(match.id));
+    setSavedPlanIds((current) => ({ ...current, [match.id]: saved.id }));
+    navigate(`/plans/${saved.id}`);
     return saved;
   };
 
@@ -89,6 +98,14 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
                 ? `Your answers surfaced ${matches.length} relevant ${mode === 'financial' ? 'strategy areas' : 'wellness topics'}. The first three are unlocked in the free report; the rest become your member/library path.`
                 : 'No priority areas were triggered from this answer pattern. If something important is missing, go back and update any answers before sharing this snapshot.'}
             </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button onClick={() => navigate('/plans')} className="bg-[#2e7d5c] hover:bg-[#25684c]">
+                View my plans
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/assessments')} className="border-[#2a5d8f] text-[#2a5d8f] hover:bg-[#2a5d8f]/10">
+                Return to My Assessments
+              </Button>
+            </div>
           </div>
 
           <div className="mt-8 grid gap-5 lg:grid-cols-[1fr_0.8fr]">
@@ -111,8 +128,8 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
                         {match.tactics.slice(0, 3).map((tactic) => <li key={tactic}>{tactic}</li>)}
                       </ul>
                     ) : null}
-                    <Button disabled={savedPlanIds.has(match.id) || addPlan.isPending} onClick={() => handleAddPlan(match)} className="mt-5 bg-[#2e7d5c] hover:bg-[#25684c]">
-                      {savedPlanIds.has(match.id) ? '✓ In my plan' : addPlan.isPending ? 'Saving…' : 'Add to my plan'}
+                    <Button disabled={addPlan.isPending} onClick={() => handleAddPlan(match)} className="mt-5 bg-[#2e7d5c] hover:bg-[#25684c]">
+                      {savedPlanIds[match.id] ? 'View my plan' : addPlan.isPending ? 'Saving…' : 'Add to my plan'}
                     </Button>
                   </CardContent>
                 </Card>
