@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Pencil, Trash2, Loader2, Shield, Users, Award, HelpCircle, Layers, BarChart3, Download, Upload, ArrowUpDown, ArrowUp, ArrowDown, MessageSquare, LayoutDashboard, GraduationCap, Zap, Building2, Star, BookOpen, PanelLeft, Database } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Shield, Users, Award, HelpCircle, Layers, BarChart3, Download, Upload, ArrowUpDown, ArrowUp, ArrowDown, MessageSquare, LayoutDashboard, GraduationCap, Zap, Building2, Star, BookOpen, PanelLeft, Database, Crown } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -47,6 +47,7 @@ import { ProfileFieldsTab } from '@/components/admin/ProfileFieldsTab';
 import { GhlProductMapTab } from '@/components/admin/GhlProductMapTab';
 import { LandingPageTab } from '@/components/admin/LandingPageTab';
 import { CheckoutLinksTab } from '@/components/admin/CheckoutLinksTab';
+import { MembershipAccessTab } from '@/components/admin/MembershipAccessTab';
 
 
 
@@ -448,6 +449,9 @@ export default function AdminPanel() {
             <TabsTrigger value="features" className="gap-1">
               <Zap className="h-4 w-4" /> Features
             </TabsTrigger>
+            <TabsTrigger value="membership-access" className="gap-1">
+              <Crown className="h-4 w-4" /> Membership Access
+            </TabsTrigger>
             <TabsTrigger value="companies" className="gap-1">
               <Building2 className="h-4 w-4" /> Companies
             </TabsTrigger>
@@ -500,6 +504,10 @@ export default function AdminPanel() {
 
           <TabsContent value="landing-page" className="space-y-4">
             <LandingPageTab />
+          </TabsContent>
+
+          <TabsContent value="membership-access" className="space-y-4">
+            <MembershipAccessTab />
           </TabsContent>
 
 
