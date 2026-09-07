@@ -7,6 +7,7 @@ import { PrimaryHorsemanCard } from './PrimaryHorsemanCard';
 import { CashFlowIndicator } from './CashFlowIndicator';
 import { DiagnosticFeedback } from './DiagnosticFeedback';
 import { SuggestedPromptCard } from './SuggestedPromptCard';
+import { MembershipImplementationBridge } from './MembershipImplementationBridge';
 import { AuthenticatedLayout } from '@/components/layout/AuthenticatedLayout';
 import { useAssessmentById } from '@/hooks/useAssessmentHistory';
 import { useProfile } from '@/hooks/useProfile';
@@ -119,6 +120,11 @@ export function ResultsPage() {
             Understanding Your Results
           </h3>
           <DiagnosticFeedback primaryHorseman={primaryHorseman} />
+        </section>
+
+        {/* Implementation bridge */}
+        <section>
+          <MembershipImplementationBridge primaryHorseman={primaryHorseman} />
         </section>
 
         {/* Generate My Next Strategy — single CTA */}
