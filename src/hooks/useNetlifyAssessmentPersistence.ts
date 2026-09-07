@@ -9,6 +9,7 @@ type NetlifyMode = 'financial' | 'physical';
 type NetlifyMatch = FinancialTheme | PhysicalQuestionMatch;
 
 type SaveResultInput = {
+  resultId?: string | null;
   mode: NetlifyMode;
   answers: AnswerMap;
   matches: NetlifyMatch[];
@@ -97,21 +98,37 @@ export function useNetlifyAssessmentPersistence() {
   const createPlan = useCreatePlan();
 
   const saveResult = useMutation({
-    mutationFn: async ({ mode, answers, matches, partition }: SaveResultInput) => {
+    mutationFn: async ({ resultId, mode, answers, matches, partition }: SaveResultInput) => {
       if (!user) return { previewOnly: true };
       const first = matches[0];
+      const payload = {
+        assessment_type: mode,
+        answers,
+        matches: matches.map(compactMatch),
+        free_matches: partition.free.map(compactMatch),
+        locked_matches: partition.locked.map(compactMatch),
+        top_match_id: first?.id ?? null,
+        top_match_name: first ? matchTitle(first) : null,
+      };
+
+      if (resultId) {
+        const { data, error } = await (supabase as any)
+          .from('rprx_netlify_assessment_results')
+          .update(payload)
+          .eq('id', resultId)
+          .eq('user_id', user.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      }
 
       const { data, error } = await (supabase as any)
         .from('rprx_netlify_assessment_results')
         .insert({
           user_id: user.id,
-          assessment_type: mode,
-          answers,
-          matches: matches.map(compactMatch),
-          free_matches: partition.free.map(compactMatch),
-          locked_matches: partition.locked.map(compactMatch),
-          top_match_id: first?.id ?? null,
-          top_match_name: first ? matchTitle(first) : null,
+          ...payload,
         })
         .select()
         .single();

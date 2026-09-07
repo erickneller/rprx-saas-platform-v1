@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Lock, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -41,8 +41,24 @@ function reasonLabel(match: FinancialTheme | PhysicalQuestionMatch) {
 }
 
 export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclaimer, sections, questions, onExit }: Props) {
-  const [answers, setAnswers] = useState<AnswerMap>({});
+  const location = useLocation();
+  const editDraft = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const resultId = params.get('editResultId');
+    if (!resultId || typeof window === 'undefined') return null;
+    try {
+      const raw = window.sessionStorage.getItem('rprx-edit-assessment');
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as { id?: string; mode?: Mode; answers?: AnswerMap; completedAt?: string };
+      if (parsed.id !== resultId || parsed.mode !== mode || !parsed.answers) return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  }, [location.search, mode]);
+  const [answers, setAnswers] = useState<AnswerMap>(() => editDraft?.answers ?? {});
   const [submitted, setSubmitted] = useState(false);
+  const [editingResultId] = useState<string | null>(() => editDraft?.id ?? null);
   const [savedPlanIds, setSavedPlanIds] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { saveResult, addPlan } = useNetlifyAssessmentPersistence();
@@ -66,7 +82,7 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
   const handleSubmit = async () => {
     const partition = partitionResults(matches, 3);
     setSubmitted(true);
-    saveResult.mutate({ mode, answers, matches, partition });
+    saveResult.mutate({ resultId: editingResultId, mode, answers, matches, partition });
   };
 
   const handleAddPlan = async (match: FinancialTheme | PhysicalQuestionMatch) => {
@@ -180,6 +196,11 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
         </div>
 
         <section className="rounded-[2rem] border border-[#d9cfbd] bg-white p-6 shadow-sm md:p-10">
+          {editingResultId ? (
+            <div className="mb-4 rounded-2xl border border-[#2e7d5c]/20 bg-[#2e7d5c]/10 p-4 text-sm font-medium text-[#193247]">
+              Editing a saved RPRx assessment result. Update any answers, then save again to refresh the matches shown in My Assessments.
+            </div>
+          ) : null}
           <p className="mb-2 text-sm font-bold uppercase tracking-[0.25em] text-[#2e7d5c]">{eyebrow}</p>
           <h1 className="font-serif text-4xl font-semibold tracking-tight md:text-6xl">{title}</h1>
           <p className="mt-4 max-w-3xl text-lg text-[#496271]">{subtitle}</p>
@@ -247,7 +268,7 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
           <div className="mt-4 flex gap-3 md:mt-0">
             {!progress.complete ? <Button variant="outline" onClick={jumpToFirstIncomplete}>Find next question</Button> : null}
             <Button disabled={!progress.complete || saveResult.isPending} onClick={handleSubmit} className="bg-[#2e7d5c] hover:bg-[#25684c]">
-              <Sparkles className="mr-2 h-4 w-4" /> {saveResult.isPending ? 'Saving…' : 'See my matches'}
+              <Sparkles className="mr-2 h-4 w-4" /> {saveResult.isPending ? 'Saving…' : editingResultId ? 'Update results' : 'See my matches'}
             </Button>
           </div>
         </div>
