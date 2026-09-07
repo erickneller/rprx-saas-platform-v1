@@ -38,6 +38,7 @@ import HealthAssessment from "./pages/HealthAssessment";
 import VirtualAdvisor from "./pages/VirtualAdvisor";
 import RprxW2 from "./pages/RprxW2";
 import Help from "./pages/Help";
+import LandingPage from "@/components/landing/LandingPage";
 import EquityRecapturePage from "./pages/EquityRecapture";
 import Unsubscribe from "./pages/Unsubscribe";
 import OAuthConsent from "./pages/OAuthConsent";
@@ -68,6 +69,7 @@ const App = () => (
 
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/old-home" element={<LandingPage />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/reset-password" element={<ResetPassword />} />

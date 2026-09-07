@@ -4,7 +4,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
 import { useFirstLoginFlow, useCompanyFirstLoginFlow } from '@/hooks/useFirstLoginFlow';
 import { resolveFinalOnboardingPath } from '@/lib/onboardingRoute';
-import LandingPage from '@/components/landing/LandingPage';
+import RprxSaasHome from '@/components/landing/RprxSaasHome';
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -25,7 +25,7 @@ const Index = () => {
   }
 
   if (!user) {
-    return <LandingPage />;
+    return <RprxSaasHome />;
   }
 
   // Phone capture is always required for OAuth users
