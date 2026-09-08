@@ -34,6 +34,7 @@ const CONFIG_TABLES: TableDef[] = [
   { name: 'partner_categories', label: 'Partner Categories', description: 'Partner category list', needsEdge: false },
   { name: 'partners', label: 'Partners', description: 'Partner directory', needsEdge: false },
   { name: 'company_partner_visibility', label: 'Company Partner Visibility', description: 'Per-company partner toggles', needsEdge: true },
+  { name: 'advisor_affiliates', label: 'Advisor Affiliates', description: 'Advisor referral codes and commission settings', needsEdge: false },
   { name: 'wizard_step_content', label: 'Wizard Copy', description: 'Profile wizard step text', needsEdge: false },
 ];
 
@@ -57,6 +58,7 @@ const USER_TABLES: TableDef[] = [
   { name: 'page_feedback', label: 'Page Feedback', description: 'User feedback/ratings', needsEdge: true },
   { name: 'user_subscriptions', label: 'Subscriptions', description: 'Subscription tiers', needsEdge: true },
   { name: 'user_roles', label: 'User Roles', description: 'Admin/moderator roles', needsEdge: true },
+  { name: 'affiliate_attributions', label: 'Affiliate Attributions', description: 'Captured referral attribution records', needsEdge: true },
 ];
 
 export function DataExportTab() {

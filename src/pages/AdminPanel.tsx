@@ -48,6 +48,7 @@ import { GhlProductMapTab } from '@/components/admin/GhlProductMapTab';
 import { LandingPageTab } from '@/components/admin/LandingPageTab';
 import { CheckoutLinksTab } from '@/components/admin/CheckoutLinksTab';
 import { MembershipAccessTab } from '@/components/admin/MembershipAccessTab';
+import { AdvisorAffiliatesTab } from '@/components/admin/AdvisorAffiliatesTab';
 
 
 
@@ -452,6 +453,9 @@ export default function AdminPanel() {
             <TabsTrigger value="membership-access" className="gap-1">
               <Crown className="h-4 w-4" /> Membership Access
             </TabsTrigger>
+            <TabsTrigger value="advisor-affiliates" className="gap-1">
+              <Users className="h-4 w-4" /> Advisor Affiliates
+            </TabsTrigger>
             <TabsTrigger value="companies" className="gap-1">
               <Building2 className="h-4 w-4" /> Companies
             </TabsTrigger>
@@ -508,6 +512,10 @@ export default function AdminPanel() {
 
           <TabsContent value="membership-access" className="space-y-4">
             <MembershipAccessTab />
+          </TabsContent>
+
+          <TabsContent value="advisor-affiliates" className="space-y-4">
+            <AdvisorAffiliatesTab />
           </TabsContent>
 
 
