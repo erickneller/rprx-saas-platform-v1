@@ -35,7 +35,7 @@ const Assessment = () => {
         disclaimer={financialAssessmentMeta.disclaimer}
         sections={financialSections}
         questions={financialQuestions}
-        onExit={() => navigate('/dashboard')}
+        onExit={() => navigate('/assessments')}
       />
     );
   }

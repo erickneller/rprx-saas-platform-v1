@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAssessmentStore } from '@/store/healthAssessmentStore';
 import { WelcomeScreen } from '@/components/health-assessment/WelcomeScreen';
 import { ProgressBar } from '@/components/health-assessment/ProgressBar';
@@ -26,6 +26,7 @@ const HealthAssessment = () => {
   const reset = useAssessmentStore((s) => s.reset);
   const rootRef = useRef<HTMLDivElement>(null);
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const engine = searchParams.get('engine');
   const useNetlifyEngine = engine !== 'legacy' && engine !== 'lovable';
   const mode = searchParams.get('mode'); // 'view' | 'edit' | null (new)
@@ -120,7 +121,7 @@ const HealthAssessment = () => {
         disclaimer={physicalAssessmentMeta.disclaimer}
         sections={physicalSections}
         questions={physicalQuestions}
-        onExit={() => window.history.back()}
+        onExit={() => navigate('/assessments')}
       />
     );
 
