@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { getAuthCallbackUrl, getAuthPageDestination } from '@/lib/authRedirect';
 
 interface AuthContextValue {
   user: User | null;
@@ -49,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error };
     },
     signUp: async (email, password, fullName, phone) => {
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = `${window.location.origin}/auth?next=${encodeURIComponent(getAuthPageDestination('/'))}`;
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -65,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: getAuthCallbackUrl(),
           skipBrowserRedirect: true,
           queryParams: { prompt: 'select_account' },
         },

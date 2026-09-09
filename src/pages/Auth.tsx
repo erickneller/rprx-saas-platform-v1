@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { formatPhone, isValidUSPhone } from '@/lib/phoneFormat';
+import { getAuthPageDestination } from '@/lib/authRedirect';
 
 const authSchema = z.object({
   email: z.string().trim().email({ message: 'Please enter a valid email address' }),
@@ -77,11 +78,7 @@ const Auth = () => {
 
   useEffect(() => {
     if (!loading && user && !justSignedUp.current) {
-      const params = new URLSearchParams(window.location.search);
-      const next = params.get('next');
-      // Only accept same-origin relative paths.
-      const safeNext = next && next.startsWith('/') && !next.startsWith('//') ? next : null;
-      navigate(safeNext ?? '/', { replace: true });
+      navigate(getAuthPageDestination('/'), { replace: true });
     }
   }, [user, loading, navigate]);
 
@@ -130,8 +127,7 @@ const Auth = () => {
           const { data: { session } } = await supabase.auth.getSession();
           if (session) {
             justSignedUp.current = true;
-            // Route through Index so the unified onboarding adapter decides.
-            navigate('/', { replace: true });
+            navigate(getAuthPageDestination('/'), { replace: true });
             return;
           }
 

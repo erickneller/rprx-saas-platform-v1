@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { getAuthPageDestination } from '@/lib/authRedirect';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ const AuthCallback = () => {
               );
               window.close();
             } else {
-              navigate('/', { replace: true });
+              navigate(getAuthPageDestination('/'), { replace: true });
             }
           });
         }

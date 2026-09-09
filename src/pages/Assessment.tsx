@@ -4,6 +4,7 @@ import { AssessmentWizard } from '@/components/assessment/AssessmentWizard';
 import { Loader2 } from 'lucide-react';
 import { NetlifyAssessmentShell } from '@/components/rprx-assessments/NetlifyAssessmentShell';
 import { financialAssessmentMeta, financialQuestions, financialSections } from '@/lib/rprx-assessments';
+import { getAuthPathForCurrentRoute } from '@/lib/authRedirect';
 
 const Assessment = () => {
   const { user, loading } = useAuth();
@@ -22,7 +23,7 @@ const Assessment = () => {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to={getAuthPathForCurrentRoute()} replace />;
   }
 
   if (useNetlifyEngine) {
