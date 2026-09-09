@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Lock, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -59,9 +59,9 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
   const [answers, setAnswers] = useState<AnswerMap>(() => editDraft?.answers ?? {});
   const [submitted, setSubmitted] = useState(false);
   const [editingResultId] = useState<string | null>(() => editDraft?.id ?? null);
-  const [savedPlanIds, setSavedPlanIds] = useState<Record<string, string>>({});
+  const [starterPlanId, setStarterPlanId] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { saveResult, addPlan } = useNetlifyAssessmentPersistence();
+  const { saveResult, addStarterPlan } = useNetlifyAssessmentPersistence();
 
   const visible = useMemo(() => visibleQuestions(questions, answers), [questions, answers]);
   const progress = useMemo(() => calculateProgress(questions, answers), [questions, answers]);
@@ -85,18 +85,20 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
     saveResult.mutate({ resultId: editingResultId, mode, answers, matches, partition });
   };
 
-  const handleAddPlan = async (match: FinancialTheme | PhysicalQuestionMatch) => {
-    const existingPlanId = savedPlanIds[match.id];
-    if (existingPlanId) {
-      navigate(`/plans/${existingPlanId}`);
+  useEffect(() => {
+    if (submitted) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [submitted]);
+
+  const handleStarterPlan = async () => {
+    if (starterPlanId) {
+      navigate(`/plans/${starterPlanId}`);
       return;
     }
-
-    const saved = await addPlan.mutateAsync({ mode, match });
-    setSavedPlanIds((current) => ({ ...current, [match.id]: saved.id }));
+    const saved = await addStarterPlan.mutateAsync({ mode, matches: resultPartition.free });
+    setStarterPlanId(saved.id);
     navigate(`/plans/${saved.id}`);
-    return saved;
   };
+
 
   if (submitted) {
     return (
@@ -115,8 +117,8 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
                 : 'No priority areas were triggered from this answer pattern. If something important is missing, go back and update any answers before sharing this snapshot.'}
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button onClick={() => navigate('/plans')} className="bg-[#2e7d5c] hover:bg-[#25684c]">
-                View my plans
+              <Button disabled={addStarterPlan.isPending || !resultPartition.free.length} onClick={handleStarterPlan} className="bg-[#2e7d5c] hover:bg-[#25684c]">
+                {starterPlanId ? 'View My Starter Plan' : addStarterPlan.isPending ? 'Building…' : 'Build My Starter Plan'}
               </Button>
               <Button variant="outline" onClick={() => navigate('/assessments')} className="border-[#2a5d8f] text-[#2a5d8f] hover:bg-[#2a5d8f]/10">
                 Return to My Assessments
@@ -144,8 +146,8 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
                         {match.tactics.slice(0, 3).map((tactic) => <li key={tactic}>{tactic}</li>)}
                       </ul>
                     ) : null}
-                    <Button disabled={addPlan.isPending} onClick={() => handleAddPlan(match)} className="mt-5 bg-[#2e7d5c] hover:bg-[#25684c]">
-                      {savedPlanIds[match.id] ? 'View my plan' : addPlan.isPending ? 'Saving…' : 'Add to my plan'}
+                    <Button disabled={addStarterPlan.isPending || !resultPartition.free.length} onClick={handleStarterPlan} className="mt-5 bg-[#2e7d5c] hover:bg-[#25684c]">
+                      {starterPlanId ? 'View My Starter Plan' : addStarterPlan.isPending ? 'Building…' : 'Build My Starter Plan'}
                     </Button>
                   </CardContent>
                 </Card>

@@ -21,6 +21,7 @@ import { Search, Loader2, FileText, Trash2, CheckSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useSubscription } from '@/hooks/useSubscription';
 
 function useDeletePlans() {
   const queryClient = useQueryClient();
@@ -47,6 +48,8 @@ export default function Plans() {
   const { data: plans = [], isLoading } = usePlans();
   const deletePlans = useDeletePlans();
   const updatePlan = useUpdatePlan();
+  const { tier } = useSubscription();
+  const isFreeUser = tier === 'free';
 
   // Auto-enforce: if only one plan exists, it must be the focus plan
   useEffect(() => {
@@ -124,10 +127,10 @@ export default function Plans() {
     <AuthenticatedLayout title="My Plans">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Free tier banner */}
-        {plans.length > 0 && (
+        {isFreeUser && plans.length > 0 && (
           <div className="mb-4 px-4 py-2 rounded-md bg-muted text-sm text-muted-foreground flex items-center justify-between">
-            <span>Free plan: {plans.length} of 1 plan{plans.length !== 1 ? 's' : ''} used</span>
-            <span className="text-xs opacity-70">Upgrade for unlimited plans</span>
+            <span>Free starter plan: review this plan first.</span>
+            <span className="text-xs opacity-70">Membership unlocks unlimited implementation paths.</span>
           </div>
         )}
         {/* Subtitle + selection controls */}
@@ -243,10 +246,10 @@ export default function Plans() {
             <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">No saved plans yet</h3>
             <p className="text-muted-foreground mb-6">
-              Chat with the Strategy Assistant and save implementation plans to track your progress.
+              Complete the free assessment first, then build one RPRx starter plan from your top matches.
             </p>
-            <Button onClick={() => navigate('/strategy-assistant')} className="bg-accent hover:bg-accent/90 text-accent-foreground">
-              Go to Strategy Assistant
+            <Button onClick={() => navigate('/assessment')} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+              Start Free Assessment
             </Button>
           </div>
         )}

@@ -15,6 +15,7 @@ import { Loader2, Trash2, Edit2, Save, X, Calendar, Clock, FileText, Star, Spark
 import { useToast } from '@/hooks/use-toast';
 import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
 import { useQueryClient } from '@tanstack/react-query';
+import { useSubscription } from '@/hooks/useSubscription';
 
 export default function PlanDetail() {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +26,7 @@ export default function PlanDetail() {
   const { toast } = useToast();
   const { data: assessments } = useAssessmentHistory();
   const queryClient = useQueryClient();
+  const { tier } = useSubscription();
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
@@ -66,6 +68,7 @@ export default function PlanDetail() {
   const isCompleted = plan.status === 'completed' || (totalSteps > 0 && completedSteps.length === totalSteps);
 
   const latestAssessment = assessments && assessments.length > 0 ? assessments[0] : null;
+  const isFreeUser = tier === 'free';
 
   // Derive display title: use strategy_name unless it's the generic fallback
   const displayTitle = plan.strategy_name && plan.strategy_name !== 'Implementation Plan'
@@ -283,6 +286,22 @@ export default function PlanDetail() {
           <div className="text-sm text-foreground leading-relaxed border-l-2 border-primary/30 pl-4">
             {displaySummary}
           </div>
+        )}
+
+        {isFreeUser && (
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="font-semibold text-foreground">Your free RPRx starter plan is unlocked</h2>
+                <p className="text-sm text-muted-foreground">
+                  Review this first plan and use it to decide your next move. Membership unlocks additional plans, resources, calculators, and deeper implementation support.
+                </p>
+              </div>
+              <Button onClick={() => navigate('/join')} className="shrink-0 bg-accent hover:bg-accent/90 text-accent-foreground">
+                Unlock Full Implementation
+              </Button>
+            </CardContent>
+          </Card>
         )}
 
         {/* Expected Result */}

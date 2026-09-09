@@ -83,10 +83,8 @@ const App = () => (
           <Route element={<UpgradeRouteGuard feature="strategy-assistant" />}>
             <Route path="/strategy-assistant" element={<ProtectedRoute><WizardGuard><StrategyAssistant /></WizardGuard></ProtectedRoute>} />
           </Route>
-          <Route element={<UpgradeRouteGuard feature="plans" />}>
-            <Route path="/plans" element={<ProtectedRoute><WizardGuard><Plans /></WizardGuard></ProtectedRoute>} />
-            <Route path="/plans/:id" element={<ProtectedRoute><WizardGuard><PlanDetail /></WizardGuard></ProtectedRoute>} />
-          </Route>
+          <Route path="/plans" element={<ProtectedRoute><WizardGuard><Plans /></WizardGuard></ProtectedRoute>} />
+          <Route path="/plans/:id" element={<ProtectedRoute><WizardGuard><PlanDetail /></WizardGuard></ProtectedRoute>} />
           <Route path="/assessments" element={<ProtectedRoute><WizardGuard><Assessments /></WizardGuard></ProtectedRoute>} />
           <Route element={<UpgradeRouteGuard feature="debt-eliminator" />}>
             <Route path="/debt-eliminator" element={<ProtectedRoute><WizardGuard><DebtEliminator /></WizardGuard></ProtectedRoute>} />

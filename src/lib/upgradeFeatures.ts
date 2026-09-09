@@ -24,7 +24,7 @@ export type FeatureKey =
 
 export const FEATURE_TIER: Record<FeatureKey, RequiredTier> = {
   'strategy-assistant': 'partner',
-  'plans':              'partner',
+  'plans':              'free',
   'debt-eliminator':    'partner',
   'partners-directory': 'partner',
   'library':            'partner',

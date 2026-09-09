@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreatePlan, type CreatePlanInput } from '@/hooks/usePlans';
+import { useSubscription } from '@/hooks/useSubscription';
 import { toast } from '@/hooks/use-toast';
 import type { AnswerMap, FinancialTheme, PhysicalQuestionMatch, ResultPartition } from '@/lib/rprx-assessments';
 
@@ -19,6 +20,11 @@ type SaveResultInput = {
 type AddPlanInput = {
   mode: NetlifyMode;
   match: NetlifyMatch;
+};
+
+type AddStarterPlanInput = {
+  mode: NetlifyMode;
+  matches: NetlifyMatch[];
 };
 
 function matchTitle(match: NetlifyMatch) {
@@ -80,6 +86,62 @@ function planInputForMatch({ mode, match }: AddPlanInput): CreatePlanInput {
   };
 }
 
+
+function planInputForStarterPlan({ mode, matches }: AddStarterPlanInput): CreatePlanInput {
+  const topMatches = matches.slice(0, 3);
+  const first = topMatches[0];
+  const planTitle = mode === 'financial' ? 'My RPRx Financial Starter Plan' : 'My RPRx Wellness Starter Plan';
+  const steps = topMatches.map((match, index) => {
+    const title = matchTitle(match);
+    const category = matchCategory(match);
+    const tactics = 'tactics' in match ? match.tactics.slice(0, 2) : [];
+    const firstTactic = tactics[0] || `Review why ${title} surfaced as an RPRx priority.`;
+
+    return {
+      title: `Priority ${index + 1}: ${title}`,
+      instruction: mode === 'financial'
+        ? `Start with ${category}. ${firstTactic} Capture the facts you need before making a tax, legal, insurance, or financial decision.`
+        : `Start with ${category}. Write down what you are experiencing, what you have already tried, and what qualified support may be appropriate.`,
+      time_estimate: '15–30 minutes',
+      done_definition: 'You have a clear next action and know what to review with the right professional or RPRx resource.',
+    };
+  });
+
+  return {
+    title: planTitle,
+    strategy_id: `rprx-${mode}-starter-plan`,
+    strategy_name: first ? `Starter plan: ${matchTitle(first)}` : planTitle,
+    content: {
+      plan_schema: 'v1',
+      summary: first
+        ? `Your free RPRx starter plan organizes the top ${topMatches.length} priorities from this assessment, beginning with ${matchTitle(first)}.`
+        : 'Your free RPRx starter plan organizes the top priorities from this assessment.',
+      steps,
+      horseman: topMatches.map(matchCategory),
+      expected_result: {
+        impact_range: 'A clearer first implementation path before upgrading',
+        first_win_timeline: 'Today',
+        confidence_note: 'Free users can review one starter plan. Membership unlocks the full implementation system.',
+      },
+      before_you_start: [
+        'Review the top priorities from your assessment before making changes.',
+        'Gather documents, account details, policies, or health notes that may affect the right next step.',
+      ],
+      risks_and_mistakes_to_avoid: [
+        'Do not treat an educational plan as individualized tax, legal, financial, insurance, or medical advice.',
+        'Do not jump to advanced tactics before confirming which priority matters most for your situation.',
+      ],
+      advisor_packet: mode === 'financial'
+        ? ['Bring this starter plan to your CPA, EA, attorney, insurance advisor, or financial professional for fit and compliance review.']
+        : ['Bring this starter plan to a qualified healthcare or wellness professional when appropriate.'],
+      disclaimer: mode === 'financial'
+        ? 'Educational only. Review tax, legal, insurance, and financial strategies with qualified professionals.'
+        : 'Educational wellness guidance only. This is not medical advice, diagnosis, or treatment.',
+    },
+    notes: `Built from the RPRx ${mode} assessment as a free starter plan.`,
+  };
+}
+
 function compactMatch(match: NetlifyMatch) {
   return {
     id: match.id,
@@ -94,6 +156,7 @@ function compactMatch(match: NetlifyMatch) {
 
 export function useNetlifyAssessmentPersistence() {
   const { user } = useAuth();
+  const { tier } = useSubscription();
   const queryClient = useQueryClient();
   const createPlan = useCreatePlan();
 
@@ -171,8 +234,33 @@ export function useNetlifyAssessmentPersistence() {
     },
   });
 
+  const addStarterPlan = useMutation({
+    mutationFn: async (input: AddStarterPlanInput) => {
+      if (user && tier === 'free') {
+        const { data: existing } = await supabase
+          .from('saved_plans')
+          .select('id')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (existing?.id) return existing;
+      }
+
+      return createPlan.mutateAsync(planInputForStarterPlan(input));
+    },
+    onSuccess: () => {
+      toast({ title: 'Starter plan built' });
+    },
+    onError: () => {
+      toast({ title: 'Could not build starter plan', description: 'Please try again after confirming you are signed in.', variant: 'destructive' });
+    },
+  });
+
   return {
     saveResult,
     addPlan,
+    addStarterPlan,
   };
 }

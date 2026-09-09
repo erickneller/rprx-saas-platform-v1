@@ -4,7 +4,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
-import { type PlanKey, type IntervalKey, GHL_PUBLIC_FUNNEL_URL } from '@/lib/ghlCheckoutConfig';
+import { type PlanKey, type IntervalKey } from '@/lib/ghlCheckoutConfig';
 import { getStoredAffiliateRef } from '@/lib/affiliateStorage';
 import { useCheckoutConfig, CHECKOUT_CONFIG_QUERY_KEY } from '@/hooks/useCheckoutConfig';
 import { useQueryClient } from '@tanstack/react-query';
@@ -99,10 +99,10 @@ export function UpgradeModal({ open, onOpenChange, initialPlan = 'partner', init
           {isBlank ? (
             <div className="absolute inset-0 flex items-center justify-center p-8 text-center">
               <div className="max-w-md space-y-4">
-                <p className="font-medium">This checkout didn't load</p>
+                <p className="font-medium">Membership options are opening outside this window</p>
                 <p className="text-sm text-muted-foreground">
                   The <strong>{plan}</strong> ({interval}) checkout link couldn't be loaded right now.
-                  You can retry, or continue to our public pricing page to complete your purchase.
+                  You can retry, or open the RPRx membership options page to choose the right path.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2 justify-center">
                   <Button
@@ -114,16 +114,16 @@ export function UpgradeModal({ open, onOpenChange, initialPlan = 'partner', init
                   <Button
                     onClick={() => {
                       const ref = getStoredAffiliateRef();
-                      const base = config.publicFunnel || GHL_PUBLIC_FUNNEL_URL;
+                      const base = new URL('/join', window.location.origin).toString();
                       const url = appendParams(base, {
                         email: user?.email ?? null,
                         user_id: user?.id ?? null,
                         ref,
                       });
-                      window.open(url, '_blank', 'noopener,noreferrer');
+                      window.location.href = url;
                     }}
                   >
-                    Continue to public pricing
+                    View RPRx membership options
                   </Button>
                 </div>
               </div>
