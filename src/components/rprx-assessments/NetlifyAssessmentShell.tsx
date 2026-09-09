@@ -1,20 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, Lock, Sparkles } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, FileText, Library, Lock, Sparkles, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { AnswerMap, AssessmentQuestion, AssessmentSection, FinancialTheme, PhysicalQuestionMatch } from '@/lib/rprx-assessments';
 import {
   calculateProgress,
+  financialAssessmentMeta,
   getFinancialMatches,
   getPhysicalMatches,
   partitionResults,
+  physicalSolutions,
   pruneHiddenAnswers,
   visibleMatrixItems,
   visibleQuestions,
 } from '@/lib/rprx-assessments';
 import { cn } from '@/lib/utils';
 import { useNetlifyAssessmentPersistence } from '@/hooks/useNetlifyAssessmentPersistence';
+import { useUpgradeGate } from '@/contexts/UpgradeGateContext';
 
 type Mode = 'financial' | 'physical';
 
@@ -48,6 +51,40 @@ function matchCategory(match: FinancialTheme | PhysicalQuestionMatch) {
   return 'name' in match ? match.horseman || match.group : match.section;
 }
 
+function resultNoun(mode: Mode) {
+  return mode === 'financial' ? 'strategy areas' : 'areas where you asked for help';
+}
+
+function tacticCount(matches: readonly (FinancialTheme | PhysicalQuestionMatch)[]) {
+  return matches.reduce((total, match) => total + ('tactics' in match ? match.tactics.length : 0), 0);
+}
+
+function physicalPartnerMatches(matches: readonly (FinancialTheme | PhysicalQuestionMatch)[]) {
+  const seen = new Set<string>();
+  return matches.flatMap((match) => {
+    if ('tactics' in match) return [];
+    const options = physicalSolutions[match.topic ?? match.id] ?? [];
+    return options.filter((option) => {
+      if (seen.has(option.t)) return false;
+      seen.add(option.t);
+      return true;
+    });
+  });
+}
+
+const financialPartnerMatches = [
+  {
+    t: 'Darvis, Nutter & Associates',
+    b: 'Wealth strategies · implementation partner for tax, legal, accounting, and entity-structure review.',
+    url: '/partners',
+  },
+  {
+    t: 'AskFrost',
+    b: 'Implementation support for strategy organization, resource guidance, and follow-through.',
+    url: '/partners',
+  },
+];
+
 export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclaimer, sections, questions, onExit }: Props) {
   const location = useLocation();
   const editDraft = useMemo(() => {
@@ -69,6 +106,7 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
   const [editingResultId] = useState<string | null>(() => editDraft?.id ?? null);
   const [starterPlanId, setStarterPlanId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { requireUpgrade } = useUpgradeGate();
   const { saveResult, addStarterPlan } = useNetlifyAssessmentPersistence();
 
   const visible = useMemo(() => visibleQuestions(questions, answers), [questions, answers]);
@@ -82,6 +120,11 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
     [matches, freeResultCount],
   );
   const progressPercent = progress.total ? Math.round((progress.answered / progress.total) * 100) : 0;
+  const resultMatches = matches as (FinancialTheme | PhysicalQuestionMatch)[];
+  const totalStrategies = mode === 'financial' ? tacticCount(resultMatches) : 0;
+  const partnerMatches = mode === 'financial' ? financialPartnerMatches : physicalPartnerMatches(resultMatches);
+  const otherAssessmentPath = mode === 'financial' ? '/health-assessment' : '/assessment';
+  const otherAssessmentLabel = mode === 'financial' ? 'Take the Health Assessment' : 'Take the Wealth Assessment';
 
   const setAnswer = (id: string, value: 'yes' | 'no') => {
     setAnswers((current) => pruneHiddenAnswers(questions, { ...current, [id]: value }));
@@ -122,82 +165,195 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
 
 
   if (submitted) {
+    const freeCount = resultPartition.free.length;
+    const lockedCount = resultPartition.locked.length;
+    const headline = matches.length
+      ? mode === 'financial'
+        ? `${matches.length} strategy areas fit your situation.`
+        : `You asked for help in ${matches.length} areas.`
+      : 'No priority areas were triggered from this answer pattern.';
+    const subline = matches.length
+      ? mode === 'financial'
+        ? `${totalStrategies || financialAssessmentMeta.strategyCount} strategies are open below — free. Membership unlocks the implementation guides, documents, calculators, and AI Advisor.`
+        : `Your first ${Math.min(3, freeCount)} areas are open below — free. Membership unlocks the remaining ${lockedCount} areas plus implementation resources and partner paths.`
+      : 'If something important is missing, go back and update any answers before sharing this snapshot.';
+
     return (
       <div className="min-h-screen bg-[#f6f3ec] text-[#193247]">
-        <div className="mx-auto max-w-6xl px-4 py-8 md:py-12">
-          <Button variant="ghost" onClick={() => setSubmitted(false)} className="mb-6 text-[#2a5d8f] hover:text-[#193247]">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to assessment
-          </Button>
-
-          <div className="rounded-[2rem] border border-[#d9cfbd] bg-white/90 p-6 shadow-sm md:p-10">
-            <p className="mb-2 text-sm font-bold uppercase tracking-[0.25em] text-[#2e7d5c]">{eyebrow} · Results</p>
-            <h1 className="font-serif text-4xl font-semibold tracking-tight md:text-5xl">Your matched RPRx areas</h1>
-            <p className="mt-4 max-w-3xl text-lg text-[#496271]">
-              {matches.length
-                ? `Your answers surfaced ${matches.length} relevant ${mode === 'financial' ? 'strategy areas' : 'wellness topics'}. The first three are unlocked in the free report; the rest become your member/library path.`
-                : 'No priority areas were triggered from this answer pattern. If something important is missing, go back and update any answers before sharing this snapshot.'}
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
+        <section className="bg-[#193247] text-white">
+          <div className="mx-auto max-w-6xl px-4 py-8 md:py-12">
+            <Button variant="ghost" onClick={() => setSubmitted(false)} className="mb-6 text-white/80 hover:bg-white/10 hover:text-white">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to assessment
+            </Button>
+            <p className="mb-3 text-sm font-bold uppercase tracking-[0.25em] text-[#9fc6b1]">{eyebrow} · Results</p>
+            <h1 className="max-w-4xl font-serif text-4xl font-semibold tracking-tight md:text-6xl">{headline}</h1>
+            <p className="mt-4 max-w-3xl text-lg text-white/75">{subline}</p>
+            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                <p className="text-3xl font-bold text-white">{matches.length}</p>
+                <p className="text-sm text-white/70">Matched {resultNoun(mode)}</p>
+              </div>
+              <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                <p className="text-3xl font-bold text-white">{mode === 'financial' ? freeCount : Math.min(3, freeCount)}</p>
+                <p className="text-sm text-white/70">Open in the free report</p>
+              </div>
+              <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                <p className="text-3xl font-bold text-white">{mode === 'financial' ? totalStrategies || financialAssessmentMeta.strategyCount : lockedCount}</p>
+                <p className="text-sm text-white/70">{mode === 'financial' ? 'Strategies surfaced' : 'Member areas remaining'}</p>
+              </div>
+            </div>
+            <div className="mt-7 flex flex-wrap gap-3">
               <Button disabled={addStarterPlan.isPending || !resultPartition.free.length} onClick={handleStarterPlan} className="bg-[#2e7d5c] hover:bg-[#25684c]">
-                {starterPlanId ? 'View My Starter Plan' : addStarterPlan.isPending ? 'Building…' : 'Build My Starter Plan'}
+                <FileText className="mr-2 h-4 w-4" /> {starterPlanId ? 'View My Starter Plan' : addStarterPlan.isPending ? 'Building…' : 'Build My Starter Plan'}
               </Button>
-              <Button variant="outline" onClick={() => navigate('/assessments')} className="border-[#2a5d8f] text-[#2a5d8f] hover:bg-[#2a5d8f]/10">
-                Return to My Assessments
+              <Button variant="outline" onClick={() => requireUpgrade({ requiredTier: 'partner' })} className="border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white">
+                <Sparkles className="mr-2 h-4 w-4" /> Become a member
+              </Button>
+              <Button variant="ghost" onClick={() => navigate(otherAssessmentPath)} className="text-white/80 hover:bg-white/10 hover:text-white">
+                {otherAssessmentLabel}
               </Button>
             </div>
           </div>
+        </section>
 
-          <div className="mt-8 grid gap-5 lg:grid-cols-[1fr_0.8fr]">
+        <div className="mx-auto max-w-6xl px-4 py-8 md:py-10">
+          <div className="mb-6 rounded-2xl border border-[#c6d9cc] bg-[#e9f4ed] p-4 text-sm font-semibold text-[#25684c]">
+            {mode === 'financial'
+              ? 'Every strategy area this assessment matched to you is visible in the free report. Membership is for implementation — guides, documents, calculators, the AI Advisor, and the complete resource library.'
+              : `Your first ${Math.min(3, freeCount)} matched areas are open free. The remaining matched areas stay visible as your member roadmap.`}
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[1fr_0.82fr]">
             <div className="space-y-5">
-              <h2 className="text-sm font-bold uppercase tracking-[0.22em] text-[#2a5d8f]">Free report</h2>
-              {resultPartition.free.map((match) => (
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#2a5d8f]">Free report</p>
+                <h2 className="mt-1 font-serif text-3xl font-semibold text-[#193247]">
+                  {mode === 'financial' ? 'Your matched wealth strategy areas' : 'Your first open wellness areas'}
+                </h2>
+              </div>
+              {resultPartition.free.map((match, index) => (
                 <Card key={match.id} className="overflow-hidden border-[#d9cfbd] bg-white shadow-sm">
-                  <CardContent className="p-6">
-                    <div className="mb-4 flex items-center justify-between gap-3">
-                      <span className="rounded-full bg-[#2e7d5c]/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#2e7d5c]">
-                        {matchCategory(match)}
-                      </span>
-                      {'hot' in match && match.hot ? <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">Hot match</span> : null}
+                  <CardContent className="p-0">
+                    <div className="border-b border-[#eadfce] bg-[#fbf8f1] px-6 py-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <span className="rounded-full bg-[#2e7d5c]/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#2e7d5c]">
+                          {matchCategory(match)}
+                        </span>
+                        <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#496271]">Open · free</span>
+                      </div>
+                      <h3 className="mt-3 font-serif text-2xl font-semibold text-[#193247]">{index + 1}. {matchTitle(match)}</h3>
                     </div>
-                    <h3 className="font-serif text-2xl font-semibold text-[#193247]">{'name' in match ? match.name : match.topic}</h3>
-                    <p className="mt-2 text-[#496271]">{match.blurb}</p>
-                    <p className="mt-4 text-sm font-medium text-[#2a5d8f]">{reasonLabel(match)}</p>
-                    {'tactics' in match && match.tactics?.length ? (
-                      <ul className="mt-4 list-disc space-y-1 pl-5 text-sm text-[#496271]">
-                        {match.tactics.slice(0, 3).map((tactic) => <li key={tactic}>{tactic}</li>)}
-                      </ul>
-                    ) : null}
-                    <Button disabled={addStarterPlan.isPending || !resultPartition.free.length} onClick={handleStarterPlan} className="mt-5 bg-[#2e7d5c] hover:bg-[#25684c]">
-                      {starterPlanId ? 'View My Starter Plan' : addStarterPlan.isPending ? 'Building…' : 'Build My Starter Plan'}
-                    </Button>
+                    <div className="p-6">
+                      <p className="text-[#496271]">{match.blurb}</p>
+                      <p className="mt-4 text-sm font-medium text-[#2a5d8f]">{reasonLabel(match)}</p>
+                      {'tactics' in match && match.tactics?.length ? (
+                        <div className="mt-5 rounded-2xl border border-[#eadfce] bg-[#f8f5ee] p-4">
+                          <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#2a5d8f]">Strategy preview</p>
+                          <ul className="list-disc space-y-1 pl-5 text-sm text-[#496271]">
+                            {match.tactics.slice(0, 5).map((tactic) => <li key={tactic}>{tactic}</li>)}
+                          </ul>
+                        </div>
+                      ) : (
+                        <div className="mt-5 rounded-2xl border border-[#eadfce] bg-[#f8f5ee] p-4 text-sm text-[#496271]">
+                          <p className="font-semibold text-[#193247]">Your next step</p>
+                          <p className="mt-1">Capture what you are experiencing, what you have tried, and which qualified support path may be appropriate.</p>
+                        </div>
+                      )}
+                      <Button disabled={addStarterPlan.isPending || !resultPartition.free.length} onClick={handleStarterPlan} className="mt-5 bg-[#2e7d5c] hover:bg-[#25684c]">
+                        {starterPlanId ? 'View My Starter Plan' : addStarterPlan.isPending ? 'Building…' : 'Add to My Starter Plan'}
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
+
+              {!matches.length ? (
+                <Card className="border-[#d9cfbd] bg-white shadow-sm">
+                  <CardContent className="p-6">
+                    <h3 className="font-serif text-2xl font-semibold">Nothing matched yet</h3>
+                    <p className="mt-2 text-[#496271]">Use the back button to adjust your answers if you expected to see a specific RPRx area.</p>
+                  </CardContent>
+                </Card>
+              ) : null}
             </div>
 
-            <div className="space-y-5">
-              <h2 className="text-sm font-bold uppercase tracking-[0.22em] text-[#2a5d8f]">Member/library path</h2>
-              <Card className="border-[#d9cfbd] bg-[#193247] text-white shadow-sm">
+            <aside className="space-y-5">
+              <Card className="border-[#d9cfbd] bg-white shadow-sm">
                 <CardContent className="p-6">
-                  <Lock className="mb-4 h-8 w-8 text-[#f3cf6b]" />
-                  <h3 className="font-serif text-2xl font-semibold">Unlock the full RPRx library</h3>
-                  <p className="mt-2 text-white/75">
-                    Members can unlock the full library path, save priorities to a plan, and get routed to the right next step based on these results.
-                  </p>
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#2e7d5c]">Your next step — implement it</p>
+                  <h3 className="mt-2 font-serif text-2xl font-semibold text-[#193247]">Turn this result into your RPRx plan</h3>
+                  <p className="mt-2 text-sm text-[#496271]">The free result tells you what surfaced. The starter plan gives you a focused workspace for the first moves.</p>
+                  <Button disabled={addStarterPlan.isPending || !resultPartition.free.length} onClick={handleStarterPlan} className="mt-5 w-full bg-[#2e7d5c] hover:bg-[#25684c]">
+                    <FileText className="mr-2 h-4 w-4" /> {starterPlanId ? 'View My Starter Plan' : 'Build My Starter Plan'}
+                  </Button>
                 </CardContent>
               </Card>
-              {resultPartition.locked.map((match) => (
-                <div key={match.id} className="rounded-2xl border border-[#d9cfbd] bg-white/70 p-5 opacity-80">
-                  <div className="flex items-center gap-3">
-                    <Lock className="h-4 w-4 text-[#2a5d8f]" />
-                    <div>
-                      <h4 className="font-semibold text-[#193247]">{'name' in match ? match.name : match.topic}</h4>
-                      <p className="text-sm text-[#496271]">{matchCategory(match)}</p>
-                    </div>
+
+              <Card className="border-[#d9cfbd] bg-[#193247] text-white shadow-sm">
+                <CardContent className="p-6">
+                  <Library className="mb-4 h-8 w-8 text-[#f3cf6b]" />
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#9fc6b1]">Member path</p>
+                  <h3 className="mt-2 font-serif text-2xl font-semibold">Become an RPRx member</h3>
+                  <p className="mt-2 text-sm text-white/75">Unlock implementation guides, documents, calculators, resource libraries, AI Advisor support, and the full wealth + health roadmap.</p>
+                  <ul className="mt-4 space-y-2 text-sm text-white/80">
+                    <li>→ Full implementation library</li>
+                    <li>→ Documents, calculators, and guide paths</li>
+                    <li>→ AI Advisor and updated strategy resources</li>
+                  </ul>
+                  <Button onClick={() => requireUpgrade({ requiredTier: 'partner' })} className="mt-5 w-full bg-white text-[#193247] hover:bg-white/90">
+                    Become a member
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="border-[#d9cfbd] bg-white shadow-sm">
+                <CardContent className="p-6">
+                  <UserRound className="mb-4 h-8 w-8 text-[#2a5d8f]" />
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#2a5d8f]">Resource partner path</p>
+                  <h3 className="mt-2 font-serif text-2xl font-semibold text-[#193247]">Get help from the right partner</h3>
+                  <p className="mt-2 text-sm text-[#496271]">RPRx can route you toward resource partners based on the areas your answers surfaced.</p>
+                  <div className="mt-4 space-y-3">
+                    {partnerMatches.slice(0, 3).map((partner) => (
+                      <div key={partner.t} className="rounded-2xl border border-[#eadfce] bg-[#f8f5ee] p-3">
+                        <p className="font-semibold text-[#193247]">{partner.t}</p>
+                        <p className="mt-1 text-sm text-[#496271]">{partner.b}</p>
+                      </div>
+                    ))}
                   </div>
+                  <Button variant="outline" onClick={() => navigate('/partners')} className="mt-5 w-full border-[#2a5d8f] text-[#2a5d8f] hover:bg-[#2a5d8f]/10">
+                    View partner introductions
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {lockedCount ? (
+                <div className="space-y-3">
+                  <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#2a5d8f]">Member roadmap</p>
+                  {resultPartition.locked.map((match) => (
+                    <div key={match.id} className="rounded-2xl border border-[#d9cfbd] bg-white/75 p-4 opacity-90">
+                      <div className="flex items-center gap-3">
+                        <Lock className="h-4 w-4 text-[#2a5d8f]" />
+                        <div>
+                          <h4 className="font-semibold text-[#193247]">{matchTitle(match)}</h4>
+                          <p className="text-sm text-[#496271]">{matchCategory(match)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              ) : null}
+
+              <Card className="border-[#d9cfbd] bg-white shadow-sm">
+                <CardContent className="p-6">
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#2a5d8f]">Complete the RPRx picture</p>
+                  <h3 className="mt-2 font-serif text-2xl font-semibold text-[#193247]">Add the other side of your wellness plan</h3>
+                  <p className="mt-2 text-sm text-[#496271]">RPRx is built around both wealth and health. Take the other assessment to complete your profile.</p>
+                  <Button variant="outline" onClick={() => navigate(otherAssessmentPath)} className="mt-5 w-full border-[#2a5d8f] text-[#2a5d8f] hover:bg-[#2a5d8f]/10">
+                    {otherAssessmentLabel}
+                  </Button>
+                </CardContent>
+              </Card>
+            </aside>
           </div>
 
           <p className="mt-8 rounded-2xl border border-[#d9cfbd] bg-white/70 p-4 text-sm text-[#496271]">{disclaimer}</p>
