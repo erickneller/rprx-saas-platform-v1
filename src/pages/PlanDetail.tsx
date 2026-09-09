@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Loader2, Trash2, Edit2, Save, X, Calendar, Clock, FileText, Star, Sparkles, ArrowRight, Shield, Target, TrendingUp } from 'lucide-react';
+import { Loader2, Trash2, Edit2, Save, X, Calendar, Clock, FileText, Star, Sparkles, ArrowRight, ArrowLeft, Shield, Target, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
 import { useQueryClient } from '@tanstack/react-query';
@@ -183,6 +183,10 @@ export default function PlanDetail() {
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => navigate('/plans')}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to My Plans
+              </Button>
               <PlanDownload plan={plan} />
               <AlertDialog>
                 <AlertDialogTrigger asChild>
