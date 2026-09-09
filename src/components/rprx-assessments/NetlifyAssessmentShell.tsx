@@ -131,10 +131,14 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
   };
 
   const jumpToFirstIncomplete = () => {
-    const first = document.querySelector('[data-incomplete="true"]');
-    first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    first?.classList.add('ring-2', 'ring-amber-300', 'bg-amber-50');
-    window.setTimeout(() => first?.classList.remove('ring-2', 'ring-amber-300', 'bg-amber-50'), 1200);
+    const first = document.querySelector<HTMLElement>('[data-incomplete="true"]');
+    if (!first) return;
+
+    const stickyOffset = window.matchMedia('(max-width: 640px)').matches ? 230 : 190;
+    const targetTop = Math.max(0, first.getBoundingClientRect().top + window.scrollY - stickyOffset);
+    window.scrollTo({ top: targetTop, behavior: 'smooth' });
+    first.classList.add('ring-2', 'ring-amber-300', 'bg-amber-50');
+    window.setTimeout(() => first.classList.remove('ring-2', 'ring-amber-300', 'bg-amber-50'), 1200);
   };
 
   const handleSubmit = async () => {

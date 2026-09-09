@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAssessmentStore } from '@/store/healthAssessmentStore';
 import { WelcomeScreen } from '@/components/health-assessment/WelcomeScreen';
 import { ProgressBar } from '@/components/health-assessment/ProgressBar';
@@ -14,6 +14,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useHealthAssessments } from '@/hooks/useHealthAssessmentHistory';
 import { NetlifyAssessmentShell } from '@/components/rprx-assessments/NetlifyAssessmentShell';
 import { physicalAssessmentMeta, physicalQuestions, physicalSections } from '@/lib/rprx-assessments';
+import { getAuthPathForCurrentRoute } from '@/lib/authRedirect';
+import { Loader2 } from 'lucide-react';
 
 const isEmbedded = () => {
   if (typeof window === 'undefined') return false;
@@ -108,8 +110,20 @@ const HealthAssessment = () => {
     });
   }, [currentStep]);
 
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const embedded = isEmbedded();
+
+  if (!embedded && loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!embedded && !user) {
+    return <Navigate to={getAuthPathForCurrentRoute()} replace />;
+  }
 
   if (useNetlifyEngine) {
     const netlifyContent = (
