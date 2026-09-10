@@ -553,6 +553,11 @@ export default function Profile() {
   });
 
   const displayUrl = previewUrl || profile?.avatar_url;
+  const anyVisible = (...keys: string[]) => keys.some((key) => isVisible(key));
+  const optionalInfoVisible = anyVisible('profile_type', 'filing_status', 'num_children', 'children_ages', 'financial_goals');
+  const cashFlowVisible = anyVisible('monthly_income', 'monthly_debt_payments', 'monthly_housing', 'monthly_insurance', 'monthly_living_expenses');
+  const insuranceVisible = anyVisible('health_insurance', 'life_insurance', 'disability_insurance', 'long_term_care_insurance', 'no_insurance');
+  const stressVisible = anyVisible('stress_money_worry', 'stress_emergency_confidence', 'stress_control_feeling');
 
   return (
     <AuthenticatedLayout title="Profile">
@@ -654,6 +659,7 @@ export default function Profile() {
         </Card>
 
         {/* Optional Information Card */}
+        {optionalInfoVisible && (
         <Card>
           <CardHeader>
             <CardTitle>About You</CardTitle>
@@ -771,8 +777,10 @@ export default function Profile() {
             )}
           </CardContent>
         </Card>
+        )}
 
         {/* Cash Flow Card */}
+        {cashFlowVisible && (
         <Card>
           <CardHeader>
             <CardTitle>Your River — Cash Flow <span className="text-destructive">*</span></CardTitle>
@@ -793,6 +801,7 @@ export default function Profile() {
             />
           </CardContent>
         </Card>
+        )}
 
         {/* 🌊 Emergency Savings */}
         {isVisible('emergency_fund_balance') && (
@@ -894,6 +903,7 @@ export default function Profile() {
         )}
 
         {/* 💰 Tax Efficiency */}
+        {isVisible('tax_advantaged_accounts') && (
         <Card>
           <CardHeader>
             <CardTitle>💰 Tax Efficiency</CardTitle>
@@ -935,30 +945,41 @@ export default function Profile() {
             </div>
           </CardContent>
         </Card>
+        )}
 
         {/* Your Rainbow — Insurance Coverage */}
+        {insuranceVisible && (
         <Card>
           <CardHeader>
             <CardTitle>Your Rainbow — Insurance Coverage / Protection <span className="text-destructive">*</span></CardTitle>
             <CardDescription>Select all coverages you currently have, or indicate you don't have any</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {isVisible('health_insurance') && (
             <div className="flex items-center justify-between">
               <Label htmlFor="healthInsurance" className="cursor-pointer">Health Insurance</Label>
               <Switch id="healthInsurance" checked={healthInsurance} onCheckedChange={(v) => { setHealthInsurance(v); if (v) setNoInsurance(false); }} />
             </div>
+            )}
+            {isVisible('life_insurance') && (
             <div className="flex items-center justify-between">
               <Label htmlFor="lifeInsurance" className="cursor-pointer">Life Insurance</Label>
               <Switch id="lifeInsurance" checked={lifeInsurance} onCheckedChange={(v) => { setLifeInsurance(v); if (v) setNoInsurance(false); }} />
             </div>
+            )}
+            {isVisible('disability_insurance') && (
             <div className="flex items-center justify-between">
               <Label htmlFor="disabilityInsurance" className="cursor-pointer">Disability Insurance</Label>
               <Switch id="disabilityInsurance" checked={disabilityInsurance} onCheckedChange={(v) => { setDisabilityInsurance(v); if (v) setNoInsurance(false); }} />
             </div>
+            )}
+            {isVisible('long_term_care_insurance') && (
             <div className="flex items-center justify-between">
               <Label htmlFor="longTermCareInsurance" className="cursor-pointer">Long‑Term Care Insurance</Label>
               <Switch id="longTermCareInsurance" checked={longTermCareInsurance} onCheckedChange={(v) => { setLongTermCareInsurance(v); if (v) setNoInsurance(false); }} />
             </div>
+            )}
+            {isVisible('no_insurance') && (
             <div className="border-t pt-4">
               <div className="flex items-center justify-between">
                 <Label htmlFor="noInsurance" className="cursor-pointer text-muted-foreground">I don't have any insurance</Label>
@@ -973,11 +994,14 @@ export default function Profile() {
                 }} />
               </div>
             </div>
+            )}
             {validationErrors.insurance && <p className="text-xs text-destructive">{validationErrors.insurance}</p>}
           </CardContent>
         </Card>
+        )}
 
         {/* 🧠 How You Feel About Money */}
+        {stressVisible && (
         <Card className="bg-muted/30 border-muted">
           <CardHeader>
             <CardTitle>🧠 How You Feel About Money</CardTitle>
@@ -986,6 +1010,7 @@ export default function Profile() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
+            {isVisible('stress_money_worry') && (
             <div className="space-y-1.5">
               <Label htmlFor="stressMoneyWorry">How often do you worry about money? <span className="text-destructive">*</span></Label>
               <Select value={stressMoneyWorry} onValueChange={setStressMoneyWorry}>
@@ -1000,7 +1025,9 @@ export default function Profile() {
               </Select>
               {validationErrors.stressMoneyWorry && <p className="text-xs text-destructive">{validationErrors.stressMoneyWorry}</p>}
             </div>
+            )}
 
+            {isVisible('stress_emergency_confidence') && (
             <div className="space-y-1.5">
               <Label htmlFor="stressEmergencyConfidence">How confident are you that you could handle a $2,000 unexpected expense? <span className="text-destructive">*</span></Label>
               <Select value={stressEmergencyConfidence} onValueChange={setStressEmergencyConfidence}>
@@ -1015,7 +1042,9 @@ export default function Profile() {
               </Select>
               {validationErrors.stressEmergencyConfidence && <p className="text-xs text-destructive">{validationErrors.stressEmergencyConfidence}</p>}
             </div>
+            )}
 
+            {isVisible('stress_control_feeling') && (
             <div className="space-y-1.5">
               <Label htmlFor="stressControlFeeling">How in control do you feel of your financial future? <span className="text-destructive">*</span></Label>
               <Select value={stressControlFeeling} onValueChange={setStressControlFeeling}>
@@ -1030,8 +1059,10 @@ export default function Profile() {
               </Select>
               {validationErrors.stressControlFeeling && <p className="text-xs text-destructive">{validationErrors.stressControlFeeling}</p>}
             </div>
+            )}
           </CardContent>
         </Card>
+        )}
 
         {/* Company Card — shown only for owners/admins who have a company */}
         {userCompany && (userMembership?.role === 'owner' || userMembership?.role === 'admin') && (

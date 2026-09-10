@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { TrendingUp, TrendingDown, Minus, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useProfileFieldSettings } from '@/hooks/useProfileFieldSettings';
 import {
   calculateCashFlowFromNumbers,
   getCashFlowLabel,
@@ -82,6 +83,9 @@ export function CashFlowSection({
   monthlyLivingExpenses,
   setMonthlyLivingExpenses,
 }: CashFlowSectionProps) {
+  const { isVisible } = useProfileFieldSettings();
+  const fixedObligationVisible = isVisible('monthly_debt_payments') || isVisible('monthly_housing') || isVisible('monthly_insurance');
+
   const cashFlowResult = useMemo(() => {
     const income = Number(monthlyIncome) || 0;
     const debt = Number(monthlyDebtPayments) || 0;
@@ -122,6 +126,7 @@ export function CashFlowSection({
       </div>
 
       {/* Net Monthly Income */}
+      {isVisible('monthly_income') && (
       <CurrencyInput
         id="monthly_income"
         label="Net Monthly Income"
@@ -129,13 +134,16 @@ export function CashFlowSection({
         onChange={setMonthlyIncome}
         helperText="Your take-home pay after taxes"
       />
+      )}
 
       {/* Fixed Obligations */}
+      {fixedObligationVisible && (
       <div className="space-y-3">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           Monthly Fixed Obligations
         </p>
         <div className="grid grid-cols-2 gap-3">
+          {isVisible('monthly_debt_payments') && (
           <CurrencyInput
             id="monthly_debt"
             label="Debt Payments"
@@ -143,6 +151,8 @@ export function CashFlowSection({
             onChange={setMonthlyDebtPayments}
             helperText="Total minimums"
           />
+          )}
+          {isVisible('monthly_housing') && (
           <CurrencyInput
             id="monthly_housing"
             label="Housing"
@@ -150,7 +160,9 @@ export function CashFlowSection({
             onChange={setMonthlyHousing}
             helperText="Rent/mortgage"
           />
+          )}
         </div>
+        {isVisible('monthly_insurance') && (
         <CurrencyInput
           id="monthly_insurance"
           label="Insurance"
@@ -158,9 +170,12 @@ export function CashFlowSection({
           onChange={setMonthlyInsurance}
           helperText="All insurance combined"
         />
+        )}
       </div>
+      )}
 
       {/* Living Expenses */}
+      {isVisible('monthly_living_expenses') && (
       <CurrencyInput
         id="monthly_living"
         label="Monthly Living Expenses"
@@ -168,6 +183,7 @@ export function CashFlowSection({
         onChange={setMonthlyLivingExpenses}
         helperText="Food, gas, utilities, subscriptions (estimate)"
       />
+      )}
 
       {/* Live Calculation Preview */}
       {cashFlowResult && Icon && (
