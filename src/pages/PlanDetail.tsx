@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { usePlan, useUpdatePlan, useDeletePlan } from '@/hooks/usePlans';
+import { usePlan, useUpdatePlan, useDeletePlan, useCreatePlan, usePlans } from '@/hooks/usePlans';
 import { PlanChecklist } from '@/components/plans/PlanChecklist';
 import { PlanDownload } from '@/components/plans/PlanDownload';
 import { AuthenticatedLayout } from '@/components/layout/AuthenticatedLayout';
@@ -16,13 +16,18 @@ import { useToast } from '@/hooks/use-toast';
 import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useNetlifyAssessmentResults } from '@/hooks/useNetlifyAssessmentResults';
+import { planInputForStarterPlan, type AssessmentStarterPlanMatch } from '@/hooks/useNetlifyAssessmentPersistence';
 
 export default function PlanDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: plan, isLoading, error } = usePlan(id);
   const updatePlan = useUpdatePlan();
+  const createPlan = useCreatePlan();
   const deletePlan = useDeletePlan();
+  const { data: allPlans = [] } = usePlans();
+  const { data: netlifyResults = [] } = useNetlifyAssessmentResults();
   const { toast } = useToast();
   const { data: assessments } = useAssessmentHistory();
   const queryClient = useQueryClient();
@@ -71,6 +76,9 @@ export default function PlanDetail() {
   const isFreeUser = tier === 'free';
   const isWellnessPlan = content.plan_kind === 'wellness' || content.source_assessment_type === 'physical' || plan.strategy_id === 'rprx-physical-starter-plan';
   const isWealthPlan = content.plan_kind === 'wealth' || content.source_assessment_type === 'financial' || plan.strategy_id === 'rprx-financial-starter-plan';
+  const latestHealthResult = netlifyResults.find((result) => result.assessment_type === 'physical');
+  const wellnessStarterPlan = allPlans.find((savedPlan) => savedPlan.strategy_id === 'rprx-physical-starter-plan');
+  const showWellnessEscapeHatch = Boolean(!isWellnessPlan && latestHealthResult);
   const planLabel = content.plan_label || (isWellnessPlan ? 'Wellness Plan' : isWealthPlan ? 'Wealth Plan' : 'starter plan');
   const fullImplementationLabel = isWellnessPlan ? 'Unlock Full Wellness Roadmap' : isWealthPlan ? 'Unlock Full Wealth Implementation' : 'Unlock Full Implementation';
   const stepSectionTitle = isWellnessPlan ? 'First Wellness Moves' : isWealthPlan ? 'First Wealth Moves' : 'Step-by-Step Plan';
@@ -97,6 +105,30 @@ export default function PlanDetail() {
     ? /^(this (plan|strategy) (will help|helps|is designed)|implementation plan for)/i.test(cleanedSummary) && cleanedSummary.length < 80
     : true;
   const displaySummary = cleanedSummary && !isGenericSummary ? cleanedSummary : null;
+
+  const handleBuildWellnessStarterPlan = async () => {
+    if (wellnessStarterPlan) {
+      navigate(`/plans/${wellnessStarterPlan.id}`);
+      return;
+    }
+    if (!latestHealthResult) return;
+
+    try {
+      const savedPlan = await createPlan.mutateAsync(planInputForStarterPlan({
+        mode: 'physical',
+        matches: (latestHealthResult.free_matches || []) as AssessmentStarterPlanMatch[],
+        lockedMatches: (latestHealthResult.locked_matches || []) as AssessmentStarterPlanMatch[],
+      }));
+      toast({ title: 'Wellness starter plan built' });
+      navigate(`/plans/${savedPlan.id}`);
+    } catch {
+      toast({
+        title: 'Could not build Wellness Starter Plan',
+        description: 'Please try again from your Health Assessment result or Assessment History.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const handleToggleStep = async (stepIndex: number) => {
     const currentCompleted = content.completedSteps || [];
@@ -298,6 +330,22 @@ export default function PlanDetail() {
           <div className="text-sm text-foreground leading-relaxed border-l-2 border-primary/30 pl-4">
             {displaySummary}
           </div>
+        )}
+
+        {showWellnessEscapeHatch && (
+          <Card className="border-emerald-200 bg-emerald-50/80">
+            <CardContent className="p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="font-semibold text-foreground">This is not your Wellness Starter Plan</h2>
+                <p className="text-sm text-muted-foreground">
+                  You have a Health Assessment saved. Build or open the Wellness Starter Plan from that Health result here.
+                </p>
+              </div>
+              <Button onClick={handleBuildWellnessStarterPlan} disabled={createPlan.isPending} className="shrink-0 bg-[#2e7d5c] hover:bg-[#25684c]">
+                {wellnessStarterPlan ? 'Open Wellness Starter Plan' : createPlan.isPending ? 'Building…' : 'Build Wellness Starter Plan'}
+              </Button>
+            </CardContent>
+          </Card>
         )}
 
         {isFreeUser && (
