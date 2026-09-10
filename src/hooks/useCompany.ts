@@ -30,9 +30,12 @@ export interface CompanyWithMembership {
 /** Production origin for invite links — keeps URLs clean regardless of where they're generated. */
 const PRODUCTION_ORIGIN = 'https://app.rprx4life.com';
 
-/** Build invite URL from token (always uses production custom domain) */
-export function buildInviteUrl(token: string): string {
-  return `${PRODUCTION_ORIGIN}/join?token=${token}`;
+/** Build invite URL from token (always uses production custom domain). Optional ref ties the join to an advisor affiliate. */
+export function buildInviteUrl(token: string, ref?: string | null): string {
+  const url = new URL('/join', PRODUCTION_ORIGIN);
+  url.searchParams.set('token', token);
+  if (ref) url.searchParams.set('ref', ref);
+  return url.toString();
 }
 
 /** Convert a company name to a URL-safe slug */
@@ -88,12 +91,21 @@ export function useCompany() {
 
   // ─── joinByToken ─────────────────────────────────────────────────────────────
   const joinByTokenMutation = useMutation({
-    mutationFn: async (token: string): Promise<Company> => {
+    mutationFn: async (input: string | { token: string; ref?: string | null; landingPath?: string | null }): Promise<Company> => {
       if (!user?.id) throw new Error('Not authenticated');
 
-      // Secure server-side join: validates token and inserts membership + profile update
+      const token = typeof input === 'string' ? input : input.token;
+      const ref = typeof input === 'string' ? null : input.ref ?? null;
+      const landingPath = typeof input === 'string' ? null : input.landingPath ?? null;
+
+      // Secure server-side join: validates token, inserts membership/profile update,
+      // and applies explicit advisor ref or company-default affiliate attribution.
       const { data: companyId, error: joinErr } = await supabase
-        .rpc('join_company_by_token', { _token: token });
+        .rpc('join_company_by_token_with_affiliate' as any, {
+          _token: token,
+          _ref: ref,
+          _landing_path: landingPath,
+        });
 
       if (joinErr) throw joinErr;
       if (!companyId) throw new Error('Invalid or expired invite link.');

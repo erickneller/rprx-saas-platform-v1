@@ -52,6 +52,7 @@ const USER_TABLES: TableDef[] = [
   { name: 'messages', label: 'Messages', description: 'Chat messages', needsEdge: true },
   { name: 'companies', label: 'Companies', description: 'Organization records', needsEdge: true },
   { name: 'company_members', label: 'Company Members', description: 'Org membership', needsEdge: true },
+  { name: 'company_affiliates', label: 'Company Affiliates', description: 'Company advisor/default affiliate assignments', needsEdge: true },
   { name: 'debt_journeys', label: 'Debt Journeys', description: 'Debt eliminator journeys', needsEdge: true },
   { name: 'user_debts', label: 'User Debts', description: 'Individual debts', needsEdge: true },
   { name: 'debt_payments', label: 'Debt Payments', description: 'Payment history', needsEdge: true },

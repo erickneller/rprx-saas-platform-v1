@@ -7,6 +7,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { type PlanKey, type IntervalKey } from '@/lib/ghlCheckoutConfig';
 import { getStoredAffiliateRef } from '@/lib/affiliateStorage';
 import { useCheckoutConfig, CHECKOUT_CONFIG_QUERY_KEY } from '@/hooks/useCheckoutConfig';
+import { useCompany } from '@/hooks/useCompany';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Loader2, RefreshCw } from 'lucide-react';
@@ -33,6 +34,7 @@ function appendParams(rawUrl: string, params: Record<string, string | null | und
 export function UpgradeModal({ open, onOpenChange, initialPlan = 'partner', initialInterval = 'month' }: UpgradeModalProps) {
   const { user } = useAuth();
   const { tier } = useSubscription();
+  const { company } = useCompany();
   const { config } = useCheckoutConfig();
   const qc = useQueryClient();
   const [plan, setPlan] = useState<PlanKey>(initialPlan);
@@ -66,8 +68,10 @@ export function UpgradeModal({ open, onOpenChange, initialPlan = 'partner', init
       email: user?.email ?? null,
       user_id: user?.id ?? null,
       ref: getStoredAffiliateRef(),
+      company_id: company?.id ?? null,
+      company: company?.name ?? null,
     });
-  }, [slot, isBlank, user]);
+  }, [slot, isBlank, user, company]);
 
   // Embed mode: render the admin-saved snippet (validated to GHL hosts on save).
   const embedHtml = slot.mode === 'embed' && !isBlank ? slot.value : '';

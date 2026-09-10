@@ -38,6 +38,7 @@ interface PendingCompany {
 export default function Join() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') ?? '';
+  const advisorRef = (searchParams.get('ref') || searchParams.get('aff') || searchParams.get('affiliate') || '').trim();
   const navigate = useNavigate();
   const { user, signInWithGoogle } = useAuth();
   const { joinByToken } = useCompany();
@@ -88,6 +89,7 @@ export default function Join() {
         });
         // Persist token so useProfile can pick it up after Google OAuth
         localStorage.setItem('pending_invite_token', token);
+        if (advisorRef) localStorage.setItem('pending_affiliate_ref', advisorRef);
       }
       setLoading(false);
     }
@@ -105,9 +107,16 @@ export default function Join() {
     async function autoJoin() {
       try {
         if (!hasJoined) {
-          await joinByToken(token);
+          await joinByToken({
+            token,
+            ref: advisorRef || null,
+            landingPath: `${window.location.pathname}${window.location.search}`,
+          });
           if (cancelled) return;
           setHasJoined(true);
+          supabase.functions.invoke('ghl-sync', {
+            body: { source: 'company-join', changedKeys: ['company_id', 'affiliate_attribution'] },
+          }).catch((err) => console.warn('[join] GHL sync failed', err));
           toast.success(`You've joined ${pendingCompany!.name}!`);
         }
         const hasAssessments = (assessments || []).some(a => a.completed_at);
@@ -145,7 +154,7 @@ export default function Join() {
     autoJoin();
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, pendingCompany, loading, presetLoading, profileLoading, assessmentsLoading, assessmentsFetched, preset, globalPath, isProfileComplete, joinError, dataTimeoutHit, profile?.onboarding_completed]);
+  }, [user, pendingCompany, loading, presetLoading, profileLoading, assessmentsLoading, assessmentsFetched, preset, globalPath, isProfileComplete, joinError, dataTimeoutHit, profile?.onboarding_completed, advisorRef]);
 
   // Hard timeout: if supporting queries never resolve, stop gating on them
   // after 15s so autoJoin can proceed (and fail loudly if the RPC errors).

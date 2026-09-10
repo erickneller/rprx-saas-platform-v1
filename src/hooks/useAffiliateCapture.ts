@@ -16,7 +16,7 @@ export function useAffiliateCapture() {
       const params = new URLSearchParams(window.location.search);
       const ref = params.get('ref') || params.get('aff') || params.get('affiliate');
       if (ref) {
-        storeAffiliateRef(ref.trim(), window.location.pathname);
+        storeAffiliateRef(ref.trim(), `${window.location.pathname}${window.location.search}`);
       }
     } catch {}
   }, []);
@@ -24,6 +24,7 @@ export function useAffiliateCapture() {
   // Persist to DB when user signs in (first-touch only)
   useEffect(() => {
     if (!user) return;
+    if (typeof window !== 'undefined' && window.location.pathname === '/join') return; // join flow records company-aware attribution
     const stored = readStoredAffiliate();
     if (!stored?.ref) return;
     (async () => {

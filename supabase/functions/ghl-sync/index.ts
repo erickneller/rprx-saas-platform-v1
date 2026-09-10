@@ -95,6 +95,41 @@ Deno.serve(async (req) => {
     const { data: profile } = await service
       .from("profiles").select("*").eq("id", user.id).maybeSingle();
 
+    const profileCompanyId = (profile as any)?.company_id ?? null;
+
+    const { data: membership } = await (service
+      .from("company_members") as any)
+      .select("company_id, role")
+      .eq("user_id", user.id)
+      .order("joined_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const joinedCompanyId = profileCompanyId ?? membership?.company_id ?? null;
+
+    const { data: company } = joinedCompanyId
+      ? await (service
+          .from("companies") as any)
+          .select("id, name, slug, plan, ghl_location_id")
+          .eq("id", joinedCompanyId)
+          .maybeSingle()
+      : { data: null } as any;
+
+    const { data: attribution } = await (service
+      .from("affiliate_attributions") as any)
+      .select("affiliate_id, landing_path, captured_at, company_id, attribution_type")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const affiliateCode = attribution?.affiliate_id ?? null;
+    const { data: affiliate } = affiliateCode
+      ? await (service
+          .from("advisor_affiliates") as any)
+          .select("id, name, email, company, referral_code, commission_rate, status")
+          .ilike("referral_code", affiliateCode)
+          .maybeSingle()
+      : { data: null } as any;
+
     // Load latest assessment for derived fields
     const { data: latestAssessment } = await (service
       .from("assessment_submissions") as any)
@@ -143,6 +178,20 @@ Deno.serve(async (req) => {
       latest_netlify_free_matches: compactTitles(latestNetlifyAssessment?.free_matches, 5),
       latest_netlify_locked_matches: compactTitles(latestNetlifyAssessment?.locked_matches, 10),
       latest_netlify_completed_at: latestNetlifyAssessment?.completed_at ?? null,
+      rprx_company_id: company?.id ?? null,
+      rprx_company_name: company?.name ?? null,
+      rprx_company_slug: company?.slug ?? null,
+      rprx_company_plan: company?.plan ?? null,
+      rprx_company_role: membership?.role ?? (profile as any)?.company_role ?? null,
+      rprx_company_ghl_location_id: company?.ghl_location_id ?? null,
+      affiliate_code: attribution?.affiliate_id ?? null,
+      affiliate_name: affiliate?.name ?? null,
+      affiliate_email: affiliate?.email ?? null,
+      affiliate_company: affiliate?.company ?? null,
+      affiliate_commission_rate: affiliate?.commission_rate ?? null,
+      affiliate_attribution_type: attribution?.attribution_type ?? null,
+      affiliate_landing_path: attribution?.landing_path ?? null,
+      affiliate_captured_at: attribution?.captured_at ?? null,
     };
 
     const standardFields: Record<string, unknown> = {};

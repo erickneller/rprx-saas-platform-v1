@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Copy, Download, ExternalLink, Loader2, Plus, Save, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { buildInviteUrl } from '@/hooks/useCompany';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -33,6 +34,8 @@ type AffiliateForm = {
   name: string;
   email: string;
   company: string;
+  company_id: string;
+  is_default_company_affiliate: boolean;
   referral_code: string;
   commission_rate: string;
   status: AffiliateStatus;
@@ -48,6 +51,9 @@ type AffiliateReportRow = {
   commission_rate: number | null;
   landing_path: string | null;
   captured_at: string;
+  attribution_type: string | null;
+  joined_company_id: string | null;
+  joined_company_name: string | null;
   referred_user_name: string | null;
   referred_user_company: string | null;
   referred_user_phone: string | null;
@@ -60,10 +66,24 @@ type AffiliateReportRow = {
   estimated_monthly_commission: number | null;
 };
 
+type CompanyOption = {
+  id: string;
+  name: string;
+};
+
+type CompanyAffiliateRow = {
+  company_id: string;
+  affiliate_id: string;
+  is_default: boolean;
+  active: boolean;
+};
+
 const emptyForm: AffiliateForm = {
   name: '',
   email: '',
   company: '',
+  company_id: '',
+  is_default_company_affiliate: false,
   referral_code: '',
   commission_rate: '20',
   status: 'active',
@@ -141,19 +161,48 @@ function useAffiliateReport() {
   });
 }
 
+function useCompaniesForAffiliates() {
+  return useQuery({
+    queryKey: ['admin-companies-affiliate-options'],
+    queryFn: async () => {
+      const { data, error } = await (supabase.from('companies') as any)
+        .select('id, name')
+        .order('name', { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as CompanyOption[];
+    },
+  });
+}
+
+function useCompanyAffiliateAssignments() {
+  return useQuery({
+    queryKey: ['company-affiliate-assignments'],
+    queryFn: async () => {
+      const { data, error } = await (supabase.from('company_affiliates') as any)
+        .select('company_id, affiliate_id, is_default, active')
+        .eq('active', true);
+      if (error) throw error;
+      return (data ?? []) as CompanyAffiliateRow[];
+    },
+  });
+}
+
 export function AdvisorAffiliatesTab() {
   const qc = useQueryClient();
   const { data: affiliates = [], isLoading: affiliatesLoading } = useAdvisorAffiliates();
   const { data: report = [], isLoading: reportLoading } = useAffiliateReport();
+  const { data: companies = [] } = useCompaniesForAffiliates();
+  const { data: assignments = [] } = useCompanyAffiliateAssignments();
   const [form, setForm] = useState<AffiliateForm>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const saveAffiliate = useMutation({
     mutationFn: async (draft: AffiliateForm) => {
+      const companyName = companies.find((c) => c.id === draft.company_id)?.name;
       const payload = {
         name: draft.name.trim(),
         email: draft.email.trim() || null,
-        company: draft.company.trim() || null,
+        company: companyName || draft.company.trim() || null,
         referral_code: slugifyCode(draft.referral_code || draft.name),
         commission_rate: Number(draft.commission_rate || 20),
         status: draft.status,
@@ -161,12 +210,31 @@ export function AdvisorAffiliatesTab() {
       };
       if (!payload.name || !payload.referral_code) throw new Error('Advisor name and referral code are required.');
 
+      let affiliateId = editingId;
       if (editingId) {
         const { error } = await (supabase.from('advisor_affiliates') as any).update(payload).eq('id', editingId);
         if (error) throw error;
       } else {
-        const { error } = await (supabase.from('advisor_affiliates') as any).insert(payload);
+        const { data, error } = await (supabase.from('advisor_affiliates') as any).insert(payload).select('id').single();
         if (error) throw error;
+        affiliateId = data.id;
+      }
+
+      if (draft.company_id && affiliateId) {
+        if (draft.is_default_company_affiliate) {
+          const { error: clearErr } = await (supabase.from('company_affiliates') as any)
+            .update({ is_default: false })
+            .eq('company_id', draft.company_id)
+            .eq('active', true);
+          if (clearErr) throw clearErr;
+        }
+        const { error: linkErr } = await (supabase.from('company_affiliates') as any).upsert({
+          company_id: draft.company_id,
+          affiliate_id: affiliateId,
+          is_default: draft.is_default_company_affiliate,
+          active: true,
+        }, { onConflict: 'company_id,affiliate_id' });
+        if (linkErr) throw linkErr;
       }
     },
     onSuccess: async () => {
@@ -174,6 +242,7 @@ export function AdvisorAffiliatesTab() {
       setForm(emptyForm);
       setEditingId(null);
       await qc.invalidateQueries({ queryKey: ['advisor-affiliates'] });
+      await qc.invalidateQueries({ queryKey: ['company-affiliate-assignments'] });
       await qc.invalidateQueries({ queryKey: ['admin-affiliate-report'] });
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : 'Failed to save advisor affiliate'),
@@ -188,11 +257,14 @@ export function AdvisorAffiliatesTab() {
   }, [affiliates, report]);
 
   const startEdit = (row: AdvisorAffiliate) => {
+    const assignment = assignments.find((a) => a.affiliate_id === row.id && a.active);
     setEditingId(row.id);
     setForm({
       name: row.name,
       email: row.email ?? '',
       company: row.company ?? '',
+      company_id: assignment?.company_id ?? '',
+      is_default_company_affiliate: assignment?.is_default ?? false,
       referral_code: row.referral_code,
       commission_rate: String(row.commission_rate ?? 20),
       status: row.status,
@@ -205,6 +277,21 @@ export function AdvisorAffiliatesTab() {
     try {
       await navigator.clipboard.writeText(link);
       toast.success('Referral link copied');
+    } catch {
+      toast.info(link);
+    }
+  };
+
+  const copyCompanyInviteLink = async (companyId: string, code: string) => {
+    const { data: token, error } = await supabase.rpc('get_company_invite_token', { _company_id: companyId });
+    if (error || !token) {
+      toast.error('Could not fetch company invite token.');
+      return;
+    }
+    const link = buildInviteUrl(token as string, code);
+    try {
+      await navigator.clipboard.writeText(link);
+      toast.success('Company + advisor invite link copied');
     } catch {
       toast.info(link);
     }
@@ -266,8 +353,24 @@ export function AdvisorAffiliatesTab() {
               <Input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="advisor@example.com" />
             </div>
             <div className="space-y-2">
-              <Label>Company</Label>
-              <Input value={form.company} onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))} placeholder="Advisor firm" />
+              <Label>Company assignment</Label>
+              <Select
+                value={form.company_id || 'none'}
+                onValueChange={(value) => {
+                  const companyId = value === 'none' ? '' : value;
+                  const companyName = companies.find((c) => c.id === companyId)?.name ?? '';
+                  setForm((f) => ({ ...f, company_id: companyId, company: companyName || f.company, is_default_company_affiliate: companyId ? f.is_default_company_affiliate : false }));
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="Optional company" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No company assignment</SelectItem>
+                  {companies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Use this to generate /join company links with this advisor's code.</p>
             </div>
             <div className="space-y-2">
               <Label>Referral code</Label>
@@ -287,6 +390,16 @@ export function AdvisorAffiliatesTab() {
                 </SelectContent>
               </Select>
             </div>
+            <label className="flex items-center gap-2 rounded-md border p-3 text-sm md:col-span-3">
+              <input
+                type="checkbox"
+                className="h-4 w-4"
+                checked={form.is_default_company_affiliate}
+                disabled={!form.company_id}
+                onChange={(e) => setForm((f) => ({ ...f, is_default_company_affiliate: e.target.checked }))}
+              />
+              Make this the default affiliate when the selected company's invite link is used without an individual advisor ref.
+            </label>
           </div>
           <div className="space-y-2">
             <Label>Notes</Label>
@@ -333,11 +446,13 @@ export function AdvisorAffiliatesTab() {
                   {affiliates.map((a) => {
                     const rows = report.filter((r) => r.affiliate_id?.toLowerCase() === a.referral_code.toLowerCase());
                     const paid = rows.filter((r) => ['partner', 'pro', 'paid'].includes(String(r.subscription_tier))).length;
+                    const assignment = assignments.find((row) => row.affiliate_id === a.id && row.active);
+                    const assignedCompany = companies.find((company) => company.id === assignment?.company_id);
                     return (
                       <TableRow key={a.id}>
                         <TableCell>
                           <div className="font-medium">{a.name}</div>
-                          <div className="text-xs text-muted-foreground">{a.company || a.email || '—'}</div>
+                          <div className="text-xs text-muted-foreground">{assignedCompany?.name || a.company || a.email || '—'}{assignment?.is_default ? ' · default' : ''}</div>
                         </TableCell>
                         <TableCell>
                           <div className="font-mono text-xs">{a.referral_code}</div>
@@ -351,7 +466,12 @@ export function AdvisorAffiliatesTab() {
                         <TableCell>{paid}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">
-                            <Button variant="ghost" size="icon" onClick={() => copyLink(a.referral_code)} title="Copy referral link"><Copy className="h-4 w-4" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => copyLink(a.referral_code)} title="Copy legacy assessment referral link"><Copy className="h-4 w-4" /></Button>
+                            {assignedCompany && (
+                              <Button variant="ghost" size="sm" onClick={() => copyCompanyInviteLink(assignedCompany.id, a.referral_code)} title="Copy company invite link with advisor ref">
+                                Copy join link
+                              </Button>
+                            )}
                             <Button variant="ghost" size="icon" onClick={() => window.open(referralLink(a.referral_code), '_blank', 'noopener,noreferrer')} title="Open referral link"><ExternalLink className="h-4 w-4" /></Button>
                             <Button variant="ghost" size="sm" onClick={() => startEdit(a)}>Edit</Button>
                           </div>
