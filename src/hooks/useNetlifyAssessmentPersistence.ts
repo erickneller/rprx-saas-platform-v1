@@ -6,8 +6,23 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { toast } from '@/hooks/use-toast';
 import type { AnswerMap, FinancialTheme, PhysicalQuestionMatch, ResultPartition } from '@/lib/rprx-assessments';
 
-type NetlifyMode = 'financial' | 'physical';
-type NetlifyMatch = FinancialTheme | PhysicalQuestionMatch;
+export type NetlifyMode = 'financial' | 'physical';
+export type AssessmentStarterPlanMatch = {
+  id: string;
+  title?: string;
+  name?: string;
+  topic?: string;
+  text?: string;
+  category?: string;
+  group?: string;
+  horseman?: string;
+  section?: string;
+  blurb?: string;
+  tactics?: string[];
+  matchedReasons?: string[];
+  hot?: boolean;
+};
+type NetlifyMatch = FinancialTheme | PhysicalQuestionMatch | AssessmentStarterPlanMatch;
 
 type SaveResultInput = {
   resultId?: string | null;
@@ -22,19 +37,21 @@ type AddPlanInput = {
   match: NetlifyMatch;
 };
 
-type AddStarterPlanInput = {
+export type AddStarterPlanInput = {
   mode: NetlifyMode;
   matches: NetlifyMatch[];
   lockedMatches?: NetlifyMatch[];
 };
 
-function matchTitle(match: NetlifyMatch) {
-  return 'name' in match ? match.name : match.topic || match.text;
+function matchTitle(match: NetlifyMatch | { title?: string; name?: string; topic?: string; text?: string }) {
+  if ('name' in match && match.name) return match.name;
+  if ('title' in match && match.title) return match.title;
+  return ('topic' in match ? match.topic : undefined) || ('text' in match ? match.text : undefined) || 'RPRx priority';
 }
 
 function matchCategory(match: NetlifyMatch) {
-  if ('horseman' in match) return match.horseman || match.group || match.category || 'Wealth';
-  return match.section || 'Health';
+  const m = match as AssessmentStarterPlanMatch;
+  return m.horseman || m.group || m.category || m.section || 'Health';
 }
 
 function planLabels(mode: NetlifyMode) {
@@ -94,7 +111,7 @@ function planInputForMatch({ mode, match }: AddPlanInput): CreatePlanInput {
 }
 
 
-function planInputForStarterPlan({ mode, matches, lockedMatches = [] }: AddStarterPlanInput): CreatePlanInput {
+export function planInputForStarterPlan({ mode, matches, lockedMatches = [] }: AddStarterPlanInput): CreatePlanInput {
   const labels = planLabels(mode);
   const topMatches = matches.slice(0, 3);
   const first = topMatches[0];

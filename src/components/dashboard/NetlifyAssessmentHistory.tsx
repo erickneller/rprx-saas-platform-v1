@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Calendar, ChevronDown, ChevronRight, Pencil, Sparkles } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronRight, FileText, Pencil, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNetlifyAssessmentResults } from '@/hooks/useNetlifyAssessmentResults';
+import { useCreatePlan, usePlans } from '@/hooks/usePlans';
+import { planInputForStarterPlan, type AssessmentStarterPlanMatch } from '@/hooks/useNetlifyAssessmentPersistence';
+import { toast } from '@/hooks/use-toast';
 
 function fmt(date: string) {
   return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -12,8 +15,13 @@ function fmt(date: string) {
 
 export function NetlifyAssessmentHistory() {
   const { data: results = [], isLoading } = useNetlifyAssessmentResults();
+  const { data: plans = [] } = usePlans();
+  const createPlan = useCreatePlan();
   const [openResultId, setOpenResultId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const latestHealthResult = results.find((result) => result.assessment_type === 'physical');
+  const wellnessStarterPlan = plans.find((plan) => plan.strategy_id === 'rprx-physical-starter-plan');
+  const showWellnessStarterPrompt = Boolean(latestHealthResult && !wellnessStarterPlan);
 
   const editResult = (result: (typeof results)[number]) => {
     window.sessionStorage.setItem('rprx-edit-assessment', JSON.stringify({
@@ -23,6 +31,31 @@ export function NetlifyAssessmentHistory() {
       completedAt: result.completed_at,
     }));
     navigate(`${result.assessment_type === 'physical' ? '/health-assessment' : '/assessment'}?editResultId=${result.id}`);
+  };
+
+  const buildStarterPlan = async (result: (typeof results)[number]) => {
+    const strategyId = `rprx-${result.assessment_type}-starter-plan`;
+    const existing = plans.find((plan) => plan.strategy_id === strategyId);
+    if (existing) {
+      navigate(`/plans/${existing.id}`);
+      return;
+    }
+
+    try {
+      const plan = await createPlan.mutateAsync(planInputForStarterPlan({
+        mode: result.assessment_type,
+        matches: (result.free_matches || []) as AssessmentStarterPlanMatch[],
+        lockedMatches: (result.locked_matches || []) as AssessmentStarterPlanMatch[],
+      }));
+      toast({ title: result.assessment_type === 'physical' ? 'Wellness starter plan built' : 'Wealth starter plan built' });
+      navigate(`/plans/${plan.id}`);
+    } catch {
+      toast({
+        title: 'Could not build starter plan',
+        description: 'Please try again after confirming you are signed in.',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (isLoading) return null;
@@ -46,6 +79,22 @@ export function NetlifyAssessmentHistory() {
           </div>
         </div>
 
+        {showWellnessStarterPrompt && latestHealthResult ? (
+          <div className="mb-4 rounded-lg border border-primary/25 bg-primary/5 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Your Health Assessment is ready for a Wellness Starter Plan</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Build a focused workspace from your first open wellness priorities — no fresh Health Assessment needed.
+                </p>
+              </div>
+              <Button size="sm" onClick={() => buildStarterPlan(latestHealthResult)} disabled={createPlan.isPending}>
+                <FileText className="mr-2 h-4 w-4" /> Build Wellness Starter Plan
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
         {results.length === 0 ? (
           <div className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">
             No RPRx assessment results saved yet. Complete one of the assessments above after signing in.
@@ -54,6 +103,10 @@ export function NetlifyAssessmentHistory() {
           <div className="space-y-3">
             {results.slice(0, 5).map((result) => {
               const isOpen = openResultId === result.id;
+              const isHealth = result.assessment_type === 'physical';
+              const starterStrategyId = `rprx-${result.assessment_type}-starter-plan`;
+              const starterPlan = plans.find((plan) => plan.strategy_id === starterStrategyId);
+              const starterLabel = isHealth ? 'Wellness Starter Plan' : 'Wealth Starter Plan';
               return (
                 <div key={result.id} className="rounded-lg border bg-background p-4 transition hover:border-primary/40">
                   <button
@@ -88,7 +141,16 @@ export function NetlifyAssessmentHistory() {
                         ))}
                       </div>
                       <div className="mt-4 flex flex-wrap gap-2">
-                        <Button size="sm" onClick={() => editResult(result)}>
+                        <Button
+                          size="sm"
+                          onClick={() => starterPlan ? navigate(`/plans/${starterPlan.id}`) : buildStarterPlan(result)}
+                          disabled={createPlan.isPending}
+                          variant={starterPlan ? 'outline' : 'default'}
+                        >
+                          <FileText className="mr-2 h-4 w-4" />
+                          {starterPlan ? `View ${starterLabel}` : `Build ${starterLabel}`}
+                        </Button>
+                        <Button size="sm" onClick={() => editResult(result)} variant="outline">
                           <Pencil className="mr-2 h-4 w-4" /> Edit answers
                         </Button>
                         <Button asChild size="sm" variant="outline">
