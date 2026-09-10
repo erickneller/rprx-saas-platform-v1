@@ -124,7 +124,9 @@ export function NetlifyAssessmentHistory() {
                       </div>
                       <p className="font-medium text-foreground">Top match: {result.top_match_name || 'No match triggered'}</p>
                       <p className="text-sm text-muted-foreground">
-                        {result.matches?.length ?? 0} total matches · {(result.free_matches?.length ?? 0)} free · {(result.locked_matches?.length ?? 0)} locked
+                        {isHealth
+                          ? `${result.matches?.length ?? 0} matched areas · ${result.free_matches?.length ?? 0} open free · ${result.locked_matches?.length ?? 0} member roadmap`
+                          : `${result.matches?.length ?? 0} matched strategies · ${result.free_matches?.length ?? 0} open free`}
                       </p>
                     </div>
                     {isOpen ? <ChevronDown className="hidden h-5 w-5 text-muted-foreground sm:block" /> : <ChevronRight className="hidden h-5 w-5 text-muted-foreground sm:block" />}

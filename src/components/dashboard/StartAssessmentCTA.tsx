@@ -5,9 +5,10 @@ import { ArrowRight, ClipboardCheck } from 'lucide-react';
 
 interface StartAssessmentCTAProps {
   isFirstTime?: boolean;
+  hasSavedResults?: boolean;
 }
 
-export function StartAssessmentCTA({ isFirstTime = true }: StartAssessmentCTAProps) {
+export function StartAssessmentCTA({ isFirstTime = true, hasSavedResults = false }: StartAssessmentCTAProps) {
   const navigate = useNavigate();
 
   return (
@@ -20,7 +21,9 @@ export function StartAssessmentCTA({ isFirstTime = true }: StartAssessmentCTAPro
           <CardTitle className="text-xl">
             {isFirstTime
               ? 'Welcome! Take Your First Assessment'
-              : 'Ready for a New Wealth Assessment?'}
+              : hasSavedResults
+                ? 'Continue From Your Assessment Results'
+                : 'Ready for a New Wealth Assessment?'}
           </CardTitle>
         </div>
       </CardHeader>
@@ -28,10 +31,12 @@ export function StartAssessmentCTA({ isFirstTime = true }: StartAssessmentCTAPro
         <p className="text-muted-foreground">
           {isFirstTime
             ? 'Discover which of the Four Horsemen—Interest, Taxes, Insurance, or Education costs—is creating the most pressure on your wealth picture. This 3-5 minute assessment will provide personalized insights.'
-            : 'Track how your wealth pressures change over time. Taking regular assessments helps you understand your progress and identify areas that need attention.'}
+            : hasSavedResults
+              ? 'Review your saved results below, build or open your starter plan, or retake an assessment when your situation changes.'
+              : 'Track how your wealth pressures change over time. Taking regular assessments helps you understand your progress and identify areas that need attention.'}
         </p>
         <Button onClick={() => navigate('/assessment')} className="w-full sm:w-auto bg-accent hover:bg-accent/90">
-          Start Wealth Assessment
+          {hasSavedResults ? 'Retake Wealth Assessment' : 'Start Wealth Assessment'}
           <ArrowRight className="h-4 w-4 ml-2" />
         </Button>
       </CardContent>
