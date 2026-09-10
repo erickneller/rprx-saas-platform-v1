@@ -44,8 +44,8 @@ export function NetlifyAssessmentHistory() {
     try {
       const plan = await createPlan.mutateAsync(planInputForStarterPlan({
         mode: result.assessment_type,
-        matches: (result.free_matches || []) as AssessmentStarterPlanMatch[],
-        lockedMatches: (result.locked_matches || []) as AssessmentStarterPlanMatch[],
+        matches: (result.assessment_type === 'financial' ? result.matches || [] : result.free_matches || []) as AssessmentStarterPlanMatch[],
+        lockedMatches: (result.assessment_type === 'financial' ? [] : result.locked_matches || []) as AssessmentStarterPlanMatch[],
       }));
       toast({ title: result.assessment_type === 'physical' ? 'Wellness starter plan built' : 'Wealth starter plan built' });
       navigate(`/plans/${plan.id}`);
@@ -126,7 +126,7 @@ export function NetlifyAssessmentHistory() {
                       <p className="text-sm text-muted-foreground">
                         {isHealth
                           ? `${result.matches?.length ?? 0} matched areas · ${result.free_matches?.length ?? 0} open free · ${result.locked_matches?.length ?? 0} member roadmap`
-                          : `${result.matches?.length ?? 0} matched strategies · ${result.free_matches?.length ?? 0} open free`}
+                          : `${result.matches?.length ?? 0} matched strategies · ${result.matches?.length ?? 0} open free`}
                       </p>
                     </div>
                     {isOpen ? <ChevronDown className="hidden h-5 w-5 text-muted-foreground sm:block" /> : <ChevronRight className="hidden h-5 w-5 text-muted-foreground sm:block" />}
