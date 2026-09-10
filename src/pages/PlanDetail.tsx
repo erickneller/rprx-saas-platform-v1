@@ -17,6 +17,7 @@ import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useNetlifyAssessmentResults } from '@/hooks/useNetlifyAssessmentResults';
+import { useHealthAssessments } from '@/hooks/useHealthAssessmentHistory';
 import { planInputForStarterPlan, type AssessmentStarterPlanMatch } from '@/hooks/useNetlifyAssessmentPersistence';
 
 export default function PlanDetail() {
@@ -28,6 +29,7 @@ export default function PlanDetail() {
   const deletePlan = useDeletePlan();
   const { data: allPlans = [] } = usePlans();
   const { data: netlifyResults = [] } = useNetlifyAssessmentResults();
+  const { data: legacyHealthResults = [] } = useHealthAssessments();
   const { toast } = useToast();
   const { data: assessments } = useAssessmentHistory();
   const queryClient = useQueryClient();
@@ -77,9 +79,12 @@ export default function PlanDetail() {
   const isWellnessPlan = content.plan_kind === 'wellness' || content.source_assessment_type === 'physical' || plan.strategy_id === 'rprx-physical-starter-plan';
   const isWealthPlan = content.plan_kind === 'wealth' || content.source_assessment_type === 'financial' || plan.strategy_id === 'rprx-financial-starter-plan';
   const latestHealthResult = netlifyResults.find((result) => result.assessment_type === 'physical');
+  const latestLegacyHealthResult = legacyHealthResults[0];
   const wellnessStarterPlan = allPlans.find((savedPlan) => savedPlan.strategy_id === 'rprx-physical-starter-plan');
-  const showWellnessEscapeHatch = Boolean(!isWellnessPlan && latestHealthResult);
-  const planLabel = content.plan_label || (isWellnessPlan ? 'Wellness Plan' : isWealthPlan ? 'Wealth Plan' : 'starter plan');
+  const canOpenOrBuildWellnessPlan = Boolean(wellnessStarterPlan || latestHealthResult);
+  const showWellnessEscapeHatch = Boolean(!isWellnessPlan && (canOpenOrBuildWellnessPlan || latestLegacyHealthResult));
+  const rawPlanLabel = content.plan_label || (isWellnessPlan ? 'Wellness Plan' : isWealthPlan ? 'Wealth Plan' : 'starter plan');
+  const planLabel = rawPlanLabel.replace(/Financial/g, 'Wealth');
   const fullImplementationLabel = isWellnessPlan ? 'Unlock Full Wellness Roadmap' : isWealthPlan ? 'Unlock Full Wealth Implementation' : 'Unlock Full Implementation';
   const stepSectionTitle = isWellnessPlan ? 'First Wellness Moves' : isWealthPlan ? 'First Wealth Moves' : 'Step-by-Step Plan';
   const advisorSectionSubtitle = isWellnessPlan
@@ -90,6 +95,7 @@ export default function PlanDetail() {
   const displayTitle = plan.strategy_name && plan.strategy_name !== 'Implementation Plan'
     ? plan.strategy_name
     : plan.title;
+  const displayedPlanTitle = plan.title.replace(/Financial/g, 'Wealth');
 
   // Single primary horseman label (strict template compliance)
   const primaryHorseman = Array.isArray(content.horseman) && content.horseman.length > 0
@@ -111,7 +117,10 @@ export default function PlanDetail() {
       navigate(`/plans/${wellnessStarterPlan.id}`);
       return;
     }
-    if (!latestHealthResult) return;
+    if (!latestHealthResult) {
+      navigate('/health-assessment');
+      return;
+    }
 
     try {
       const savedPlan = await createPlan.mutateAsync(planInputForStarterPlan({
@@ -276,7 +285,7 @@ export default function PlanDetail() {
 
             {/* Show plan.title as subtitle when it's different */}
             {displayTitle !== plan.title && (
-              <p className="text-sm text-muted-foreground mt-1">{plan.title}</p>
+              <p className="text-sm text-muted-foreground mt-1">{displayedPlanTitle}</p>
             )}
           </div>
 
@@ -338,11 +347,13 @@ export default function PlanDetail() {
               <div>
                 <h2 className="font-semibold text-foreground">This is not your Wellness Starter Plan</h2>
                 <p className="text-sm text-muted-foreground">
-                  You have a Health Assessment saved. Build or open the Wellness Starter Plan from that Health result here.
+                  {latestHealthResult
+                    ? 'You have a new Health Assessment result saved. Build or open the Wellness Starter Plan from that Health result here.'
+                    : 'This account has an older Health Assessment, but no new Wellness-ready Health result yet. Start the Health Assessment to create the Wellness Starter Plan.'}
                 </p>
               </div>
               <Button onClick={handleBuildWellnessStarterPlan} disabled={createPlan.isPending} className="shrink-0 bg-[#2e7d5c] hover:bg-[#25684c]">
-                {wellnessStarterPlan ? 'Open Wellness Starter Plan' : createPlan.isPending ? 'Building…' : 'Build Wellness Starter Plan'}
+                {wellnessStarterPlan ? 'Open Wellness Starter Plan' : createPlan.isPending ? 'Building…' : latestHealthResult ? 'Build Wellness Starter Plan' : 'Start Health Assessment'}
               </Button>
             </CardContent>
           </Card>
