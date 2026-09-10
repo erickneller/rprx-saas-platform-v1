@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
-import { LifeBuoy, Search, Send, MessageCircle, Phone, Bug, Lightbulb, HelpCircle } from 'lucide-react';
+import { LifeBuoy, Search, Send, MessageCircle, Bug, Lightbulb, HelpCircle } from 'lucide-react';
 import { AuthenticatedLayout } from '@/components/layout/AuthenticatedLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,26 +12,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useUserGuide } from '@/hooks/useUserGuide';
 import { useSubmitSupportRequest, type SupportRequestType } from '@/hooks/useSupportRequests';
-import { useAdvisorLink } from '@/hooks/useAdvisorLink';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { toast } from 'sonner';
 
-const TYPE_META: Record<SupportRequestType, { label: string; description: string; icon: any }> = {
+type HelpRequestType = Exclude<SupportRequestType, 'advisor'>;
+
+const TYPE_META: Record<HelpRequestType, { label: string; description: string; icon: any }> = {
   help: { label: 'General help / question', description: 'Ask a question and we will get back to you.', icon: HelpCircle },
   bug: { label: 'Report a bug', description: 'Something looks broken or behaves unexpectedly.', icon: Bug },
   feature: { label: 'Request a feature', description: 'Suggest an improvement or new capability.', icon: Lightbulb },
-  advisor: { label: 'Talk to an advisor', description: 'Connect with a real human RPRx advisor.', icon: Phone },
 };
+
+const HELP_REQUEST_TYPES: HelpRequestType[] = ['help', 'bug', 'feature'];
 
 export default function Help() {
   const navigate = useNavigate();
   const { data: sections = [], isLoading } = useUserGuide(true);
   const submit = useSubmitSupportRequest();
-  const { url: advisorUrl } = useAdvisorLink();
   const { enabled: chatEnabled } = useFeatureFlag('chat_enabled');
 
   const [query, setQuery] = useState('');
-  const [type, setType] = useState<SupportRequestType>('help');
+  const [type, setType] = useState<HelpRequestType>('help');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
 
@@ -131,12 +132,12 @@ export default function Help() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Type of request</Label>
-                <Select value={type} onValueChange={(v) => setType(v as SupportRequestType)}>
+                <Select value={type} onValueChange={(v) => setType(v as HelpRequestType)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {(Object.keys(TYPE_META) as SupportRequestType[]).map((k) => {
+                    {HELP_REQUEST_TYPES.map((k) => {
                       const Icon = TYPE_META[k].icon;
                       return (
                         <SelectItem key={k} value={k}>
@@ -153,73 +154,53 @@ export default function Help() {
                 </p>
               </div>
 
-              {type === 'advisor' ? (
-                <div className="space-y-3 rounded-md border bg-muted/30 p-4">
-                  <p className="text-sm">
-                    Speak with a real RPRx advisor for personalized guidance.
-                  </p>
-                  <Button
-                    className="w-full gap-2"
-                    onClick={() => {
-                      if (advisorUrl) window.open(advisorUrl, '_blank');
-                      else navigate('/virtual-advisor');
-                    }}
-                  >
-                    <Phone className="h-4 w-4" /> Book an Advisor
-                  </Button>
-                  <p className="text-xs text-muted-foreground text-center">
-                    Prefer to send a written request first? Pick another type above.
-                  </p>
+              <form onSubmit={handleSubmit} className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="subject">Subject</Label>
+                  <Input
+                    id="subject"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value.slice(0, 120))}
+                    placeholder="Short summary"
+                    maxLength={120}
+                    required
+                  />
                 </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="subject">Subject</Label>
-                    <Input
-                      id="subject"
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value.slice(0, 120))}
-                      placeholder="Short summary"
-                      maxLength={120}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="message">Details</Label>
-                    <Textarea
-                      id="message"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value.slice(0, 2000))}
-                      placeholder={
-                        type === 'bug'
-                          ? 'What happened? What did you expect? Steps to reproduce…'
-                          : type === 'feature'
-                          ? 'Describe the feature and why it would help you.'
-                          : 'Tell us how we can help.'
-                      }
-                      rows={6}
-                      maxLength={2000}
-                      required
-                    />
-                    <p className="text-xs text-muted-foreground text-right">{message.length}/2000</p>
-                  </div>
-                  <Button type="submit" disabled={submit.isPending} className="w-full gap-2">
-                    <Send className="h-4 w-4" />
-                    {submit.isPending ? 'Sending…' : 'Send Request'}
-                  </Button>
+                <div className="space-y-1.5">
+                  <Label htmlFor="message">Details</Label>
+                  <Textarea
+                    id="message"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value.slice(0, 2000))}
+                    placeholder={
+                      type === 'bug'
+                        ? 'What happened? What did you expect? Steps to reproduce…'
+                        : type === 'feature'
+                        ? 'Describe the feature and why it would help you.'
+                        : 'Tell us how we can help.'
+                    }
+                    rows={6}
+                    maxLength={2000}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground text-right">{message.length}/2000</p>
+                </div>
+                <Button type="submit" disabled={submit.isPending} className="w-full gap-2">
+                  <Send className="h-4 w-4" />
+                  {submit.isPending ? 'Sending…' : 'Send Request'}
+                </Button>
 
-                  {type === 'help' && chatEnabled && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full gap-2"
-                      onClick={() => navigate('/strategy-assistant')}
-                    >
-                      <MessageCircle className="h-4 w-4" /> Or ask the RPRx Assistant
-                    </Button>
-                  )}
-                </form>
-              )}
+                {type === 'help' && chatEnabled && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full gap-2"
+                    onClick={() => navigate('/strategy-assistant')}
+                  >
+                    <MessageCircle className="h-4 w-4" /> Or ask the RPRx Assistant
+                  </Button>
+                )}
+              </form>
             </CardContent>
           </Card>
         </div>
