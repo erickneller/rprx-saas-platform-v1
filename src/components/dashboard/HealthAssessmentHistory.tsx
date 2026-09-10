@@ -41,7 +41,7 @@ export function HealthAssessmentHistory() {
             <div>
               <h3 className="font-semibold text-foreground">No health assessment yet</h3>
               <p className="text-sm text-muted-foreground">
-                Take the RPRx Physical Health Assessment to see your wellness opportunities.
+                Take the RPRx Health Assessment to see your wellness opportunities.
               </p>
             </div>
           </div>

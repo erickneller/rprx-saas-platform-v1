@@ -37,12 +37,12 @@ export function NetlifyAssessmentHistory() {
               <h3 className="font-semibold text-foreground">RPRx assessment results</h3>
             </div>
             <p className="text-sm text-muted-foreground">
-              Financial and physical RPRx results saved to your account and ready for your next plan step.
+              Wealth and Health RPRx results saved to your account and ready for your next plan step.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button asChild size="sm" variant="outline"><Link to="/assessment">Financial assessment</Link></Button>
-            <Button asChild size="sm" variant="outline"><Link to="/health-assessment">Physical assessment</Link></Button>
+            <Button asChild size="sm" variant="outline"><Link to="/assessment">Wealth assessment</Link></Button>
+            <Button asChild size="sm" variant="outline"><Link to="/health-assessment">Health assessment</Link></Button>
           </div>
         </div>
 
@@ -65,7 +65,7 @@ export function NetlifyAssessmentHistory() {
                     <div>
                       <div className="mb-1 flex flex-wrap items-center gap-2">
                         <Badge variant={result.assessment_type === 'financial' ? 'default' : 'secondary'}>
-                          {result.assessment_type === 'financial' ? 'Financial' : 'Physical'}
+                          {result.assessment_type === 'financial' ? 'Wealth' : 'Health'}
                         </Badge>
                         <span className="flex items-center gap-1 text-xs text-muted-foreground"><Calendar className="h-3 w-3" /> {fmt(result.completed_at)}</span>
                       </div>

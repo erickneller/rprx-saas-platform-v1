@@ -25,6 +25,7 @@ type AddPlanInput = {
 type AddStarterPlanInput = {
   mode: NetlifyMode;
   matches: NetlifyMatch[];
+  lockedMatches?: NetlifyMatch[];
 };
 
 function matchTitle(match: NetlifyMatch) {
@@ -32,8 +33,14 @@ function matchTitle(match: NetlifyMatch) {
 }
 
 function matchCategory(match: NetlifyMatch) {
-  if ('horseman' in match) return match.horseman || match.group || match.category || 'Financial';
-  return match.section || 'Physical';
+  if ('horseman' in match) return match.horseman || match.group || match.category || 'Wealth';
+  return match.section || 'Health';
+}
+
+function planLabels(mode: NetlifyMode) {
+  return mode === 'financial'
+    ? { kind: 'wealth' as const, title: 'My RPRx Wealth Starter Plan', short: 'Wealth Plan', assessment: 'Wealth Assessment', resource: 'wealth resources', professional: 'CPA, EA, attorney, insurance advisor, or financial professional' }
+    : { kind: 'wellness' as const, title: 'My RPRx Wellness Starter Plan', short: 'Wellness Plan', assessment: 'Health Assessment', resource: 'wellness resources', professional: 'qualified healthcare, wellness, or mental-health professional' };
 }
 
 function planInputForMatch({ mode, match }: AddPlanInput): CreatePlanInput {
@@ -87,10 +94,11 @@ function planInputForMatch({ mode, match }: AddPlanInput): CreatePlanInput {
 }
 
 
-function planInputForStarterPlan({ mode, matches }: AddStarterPlanInput): CreatePlanInput {
+function planInputForStarterPlan({ mode, matches, lockedMatches = [] }: AddStarterPlanInput): CreatePlanInput {
+  const labels = planLabels(mode);
   const topMatches = matches.slice(0, 3);
   const first = topMatches[0];
-  const planTitle = mode === 'financial' ? 'My RPRx Financial Starter Plan' : 'My RPRx Wellness Starter Plan';
+  const lockedRoadmap = lockedMatches.map(matchTitle).slice(0, 12);
   const steps = topMatches.map((match, index) => {
     const title = matchTitle(match);
     const category = matchCategory(match);
@@ -100,45 +108,55 @@ function planInputForStarterPlan({ mode, matches }: AddStarterPlanInput): Create
     return {
       title: `Priority ${index + 1}: ${title}`,
       instruction: mode === 'financial'
-        ? `Start with ${category}. ${firstTactic} Capture the facts you need before making a tax, legal, insurance, or financial decision.`
-        : `Start with ${category}. Write down what you are experiencing, what you have already tried, and what qualified support may be appropriate.`,
-      time_estimate: '15–30 minutes',
-      done_definition: 'You have a clear next action and know what to review with the right professional or RPRx resource.',
+        ? `Start with this wealth area: ${category}. ${firstTactic} Capture the facts you need before making a tax, legal, insurance, or wealth decision.`
+        : `Start with this wellness area: ${category}. Write down what you are experiencing, what you have already tried, what patterns you notice, and what qualified support may be appropriate.`,
+      time_estimate: mode === 'financial' ? '15–30 minutes to organize facts' : '10–20 minutes to observe and summarize',
+      done_definition: mode === 'financial'
+        ? 'You know the next wealth question to review with the right professional or RPRx resource.'
+        : 'You have a safe, plain-English summary of this wellness priority and a next question/resource path.',
     };
   });
 
   return {
-    title: planTitle,
+    title: labels.title,
     strategy_id: `rprx-${mode}-starter-plan`,
-    strategy_name: first ? `Starter plan: ${matchTitle(first)}` : planTitle,
+    strategy_name: first ? `${labels.short}: ${matchTitle(first)}` : labels.title,
     content: {
       plan_schema: 'v1',
+      source_assessment_type: mode,
+      plan_kind: labels.kind,
+      plan_label: labels.short,
       summary: first
-        ? `Your free RPRx starter plan organizes the top ${topMatches.length} priorities from this assessment, beginning with ${matchTitle(first)}.`
-        : 'Your free RPRx starter plan organizes the top priorities from this assessment.',
+        ? `Your free RPRx ${labels.short} organizes the first ${topMatches.length} open priorities from your ${labels.assessment}, beginning with ${matchTitle(first)}.`
+        : `Your free RPRx ${labels.short} organizes the top priorities from your ${labels.assessment}.`,
       steps,
       horseman: topMatches.map(matchCategory),
+      locked_roadmap: lockedRoadmap,
+      observation_prompts: mode === 'physical'
+        ? ['What are you noticing day to day?', 'What have you already tried?', 'When does this get better or worse?', 'What would you like to ask a qualified professional?']
+        : ['Which facts or documents affect this wealth area?', 'Which professional should review this before action?', 'What is the next safe implementation question?'],
+      professional_questions: topMatches.map((match) => mode === 'financial'
+        ? `What should I ask my advisor before acting on ${matchTitle(match)}?`
+        : `What should I discuss with a qualified professional about ${matchTitle(match)}?`),
       expected_result: {
-        impact_range: 'A clearer first implementation path before upgrading',
+        impact_range: mode === 'financial' ? 'A clearer first wealth implementation path before upgrading' : 'A clearer first wellness support path before upgrading',
         first_win_timeline: 'Today',
-        confidence_note: 'Free users can review one starter plan. Membership unlocks the full implementation system.',
+        confidence_note: lockedRoadmap.length
+          ? `Free users can review this ${labels.short}. Membership unlocks the remaining roadmap, ${labels.resource}, calculators, AI Advisor, and partner support.`
+          : `Free users can review this ${labels.short}. Membership unlocks deeper ${labels.resource}, calculators, AI Advisor, and partner support.`,
       },
-      before_you_start: [
-        'Review the top priorities from your assessment before making changes.',
-        'Gather documents, account details, policies, or health notes that may affect the right next step.',
-      ],
-      risks_and_mistakes_to_avoid: [
-        'Do not treat an educational plan as individualized tax, legal, financial, insurance, or medical advice.',
-        'Do not jump to advanced tactics before confirming which priority matters most for your situation.',
-      ],
-      advisor_packet: mode === 'financial'
-        ? ['Bring this starter plan to your CPA, EA, attorney, insurance advisor, or financial professional for fit and compliance review.']
-        : ['Bring this starter plan to a qualified healthcare or wellness professional when appropriate.'],
+      before_you_start: mode === 'financial'
+        ? ['Review the top wealth priorities from your assessment before making changes.', 'Gather account details, policies, tax documents, debt notes, or education-cost information that may affect the right next step.']
+        : ['Review the first open wellness priorities from your assessment before making changes.', 'Write down symptoms, patterns, habits, screenings, current support, and questions that may help a qualified professional understand your situation.'],
+      risks_and_mistakes_to_avoid: mode === 'financial'
+        ? ['Do not treat an educational plan as individualized tax, legal, financial, or insurance advice.', 'Do not implement wealth strategies before confirming fit, compliance, costs, and timing with qualified professionals.']
+        : ['Do not treat an educational wellness plan as medical advice, diagnosis, or treatment.', 'Do not delay urgent care or replace professional guidance with an app-generated plan.', 'Do not jump to advanced changes before confirming what is safe for your situation.'],
+      advisor_packet: [`Bring this ${labels.short} to a ${labels.professional} when appropriate.`],
       disclaimer: mode === 'financial'
-        ? 'Educational only. Review tax, legal, insurance, and financial strategies with qualified professionals.'
+        ? 'Educational only. Review tax, legal, insurance, and wealth strategies with qualified professionals.'
         : 'Educational wellness guidance only. This is not medical advice, diagnosis, or treatment.',
     },
-    notes: `Built from the RPRx ${mode} assessment as a free starter plan.`,
+    notes: `Built from the RPRx ${labels.assessment} as a free ${labels.short}.`,
   };
 }
 
@@ -241,6 +259,7 @@ export function useNetlifyAssessmentPersistence() {
           .from('saved_plans')
           .select('id')
           .eq('user_id', user.id)
+          .eq('strategy_id', `rprx-${input.mode}-starter-plan`)
           .order('created_at', { ascending: true })
           .limit(1)
           .maybeSingle();

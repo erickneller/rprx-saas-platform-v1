@@ -125,6 +125,10 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
   const partnerMatches = mode === 'financial' ? financialPartnerMatches : physicalPartnerMatches(resultMatches);
   const otherAssessmentPath = mode === 'financial' ? '/health-assessment' : '/assessment';
   const otherAssessmentLabel = mode === 'financial' ? 'Take the Health Assessment' : 'Take the Wealth Assessment';
+  const starterPlanLabel = mode === 'financial' ? 'Wealth Plan' : 'Wellness Plan';
+  const buildStarterLabel = mode === 'financial' ? 'Build My Wealth Starter Plan' : 'Build My Wellness Starter Plan';
+  const viewStarterLabel = mode === 'financial' ? 'View My Wealth Plan' : 'View My Wellness Plan';
+  const addStarterLabel = mode === 'financial' ? 'Add to My Wealth Plan' : 'Add to My Wellness Plan';
 
   const setAnswer = (id: string, value: 'yes' | 'no') => {
     setAnswers((current) => pruneHiddenAnswers(questions, { ...current, [id]: value }));
@@ -162,7 +166,7 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
       navigate(`/plans/${starterPlanId}`);
       return;
     }
-    const saved = await addStarterPlan.mutateAsync({ mode, matches: resultPartition.free });
+    const saved = await addStarterPlan.mutateAsync({ mode, matches: resultPartition.free, lockedMatches: resultPartition.locked });
     setStarterPlanId(saved.id);
     navigate(`/plans/${saved.id}`);
   };
@@ -208,7 +212,7 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
             </div>
             <div className="mt-7 flex flex-wrap gap-3">
               <Button disabled={addStarterPlan.isPending || !resultPartition.free.length} onClick={handleStarterPlan} className="bg-[#2e7d5c] hover:bg-[#25684c]">
-                <FileText className="mr-2 h-4 w-4" /> {starterPlanId ? 'View My Starter Plan' : addStarterPlan.isPending ? 'Building…' : 'Build My Starter Plan'}
+                <FileText className="mr-2 h-4 w-4" /> {starterPlanId ? viewStarterLabel : addStarterPlan.isPending ? 'Building…' : buildStarterLabel}
               </Button>
               <Button variant="outline" onClick={() => requireUpgrade({ requiredTier: 'partner' })} className="border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white">
                 <Sparkles className="mr-2 h-4 w-4" /> Become a member
@@ -264,7 +268,7 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
                         </div>
                       )}
                       <Button disabled={addStarterPlan.isPending || !resultPartition.free.length} onClick={handleStarterPlan} className="mt-5 bg-[#2e7d5c] hover:bg-[#25684c]">
-                        {starterPlanId ? 'View My Starter Plan' : addStarterPlan.isPending ? 'Building…' : 'Add to My Starter Plan'}
+                        {starterPlanId ? viewStarterLabel : addStarterPlan.isPending ? 'Building…' : addStarterLabel}
                       </Button>
                     </div>
                   </CardContent>
@@ -286,9 +290,9 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
                 <CardContent className="p-6">
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#2e7d5c]">Your next step — implement it</p>
                   <h3 className="mt-2 font-serif text-2xl font-semibold text-[#193247]">Turn this result into your RPRx plan</h3>
-                  <p className="mt-2 text-sm text-[#496271]">The free result tells you what surfaced. The starter plan gives you a focused workspace for the first moves.</p>
+                  <p className="mt-2 text-sm text-[#496271]">The free result tells you what surfaced. The {starterPlanLabel} gives you a focused workspace for the first moves.</p>
                   <Button disabled={addStarterPlan.isPending || !resultPartition.free.length} onClick={handleStarterPlan} className="mt-5 w-full bg-[#2e7d5c] hover:bg-[#25684c]">
-                    <FileText className="mr-2 h-4 w-4" /> {starterPlanId ? 'View My Starter Plan' : 'Build My Starter Plan'}
+                    <FileText className="mr-2 h-4 w-4" /> {starterPlanId ? viewStarterLabel : buildStarterLabel}
                   </Button>
                 </CardContent>
               </Card>

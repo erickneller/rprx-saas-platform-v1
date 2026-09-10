@@ -32,7 +32,7 @@ const Assessment = () => {
         mode="financial"
         title={financialAssessmentMeta.label}
         eyebrow={financialAssessmentMeta.eyebrow}
-        subtitle="A lightweight yes/no assessment that starts with a short set of questions, then shows follow-ups only when relevant: family, income, deductions, buying and selling, debt, insurance, and how you prefer to work with RPRx. No detailed account balances required."
+        subtitle="A lightweight yes/no wealth assessment that starts with a short set of questions, then shows follow-ups only when relevant: family, income, deductions, buying and selling, debt, insurance, and how you prefer to work with RPRx. No detailed account balances required."
         disclaimer={financialAssessmentMeta.disclaimer}
         sections={financialSections}
         questions={financialQuestions}

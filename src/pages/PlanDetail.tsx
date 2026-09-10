@@ -69,6 +69,14 @@ export default function PlanDetail() {
 
   const latestAssessment = assessments && assessments.length > 0 ? assessments[0] : null;
   const isFreeUser = tier === 'free';
+  const isWellnessPlan = content.plan_kind === 'wellness' || content.source_assessment_type === 'physical' || plan.strategy_id === 'rprx-physical-starter-plan';
+  const isWealthPlan = content.plan_kind === 'wealth' || content.source_assessment_type === 'financial' || plan.strategy_id === 'rprx-financial-starter-plan';
+  const planLabel = content.plan_label || (isWellnessPlan ? 'Wellness Plan' : isWealthPlan ? 'Wealth Plan' : 'starter plan');
+  const fullImplementationLabel = isWellnessPlan ? 'Unlock Full Wellness Roadmap' : isWealthPlan ? 'Unlock Full Wealth Implementation' : 'Unlock Full Implementation';
+  const stepSectionTitle = isWellnessPlan ? 'First Wellness Moves' : isWealthPlan ? 'First Wealth Moves' : 'Step-by-Step Plan';
+  const advisorSectionSubtitle = isWellnessPlan
+    ? 'Use these notes with a qualified healthcare, wellness, or mental-health professional when appropriate'
+    : 'Bring this to your CPA, EA, attorney, insurance advisor, or financial advisor when appropriate';
 
   // Derive display title: use strategy_name unless it's the generic fallback
   const displayTitle = plan.strategy_name && plan.strategy_name !== 'Implementation Plan'
@@ -296,13 +304,13 @@ export default function PlanDetail() {
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="font-semibold text-foreground">Your free RPRx starter plan is unlocked</h2>
+                <h2 className="font-semibold text-foreground">Your free RPRx {planLabel} is unlocked</h2>
                 <p className="text-sm text-muted-foreground">
-                  Review this first plan and use it to decide your next move. Membership unlocks additional plans, resources, calculators, and deeper implementation support.
+                  Review this first {planLabel.toLowerCase()} and use it to decide your next move. Membership unlocks additional {isWellnessPlan ? 'wellness roadmap areas, resources, calculators, and partner support' : 'wealth plans, resources, calculators, and deeper implementation support'}.
                 </p>
               </div>
               <Button onClick={() => navigate('/join')} className="shrink-0 bg-accent hover:bg-accent/90 text-accent-foreground">
-                Unlock Full Implementation
+                {fullImplementationLabel}
               </Button>
             </CardContent>
           </Card>
@@ -359,6 +367,75 @@ export default function PlanDetail() {
           </div>
         )}
 
+        {/* Observation prompts */}
+        {content.observation_prompts && content.observation_prompts.length > 0 && (
+          <div className="space-y-3">
+            <div>
+              <h2 className="text-lg font-semibold">{isWellnessPlan ? 'What to Observe or Track' : 'What to Confirm First'}</h2>
+              <p className="text-sm text-muted-foreground">Use these prompts before deciding the next action</p>
+            </div>
+            <Card>
+              <CardContent className="pt-4 pb-4">
+                <ul className="space-y-2">
+                  {content.observation_prompts.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm">
+                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Member roadmap */}
+        {content.locked_roadmap && content.locked_roadmap.length > 0 && (
+          <Card className="border-amber-200 bg-amber-50/60">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Shield className="h-4 w-4 text-amber-700" />
+                {isWellnessPlan ? 'Member Wellness Roadmap' : 'Member Wealth Roadmap'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 pb-4">
+              <p className="text-sm text-muted-foreground">
+                These additional matched areas stay attached to this {planLabel.toLowerCase()}. Membership unlocks the deeper resource path for each one.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {content.locked_roadmap.map((item, i) => (
+                  <Badge key={`${item}-${i}`} variant="outline" className="bg-background/70">{item}</Badge>
+                ))}
+              </div>
+              <Button size="sm" onClick={() => navigate('/join')} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                {fullImplementationLabel}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Professional questions */}
+        {content.professional_questions && content.professional_questions.length > 0 && (
+          <div className="space-y-3">
+            <div>
+              <h2 className="text-lg font-semibold">Questions for the Right Professional</h2>
+              <p className="text-sm text-muted-foreground">Keep these for a safe, productive conversation</p>
+            </div>
+            <Card>
+              <CardContent className="pt-4 pb-4">
+                <ul className="space-y-2">
+                  {content.professional_questions.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm">
+                      <Shield className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Requirements (legacy field) */}
         {content.requirements && (
           <div className="space-y-2">
@@ -371,7 +448,7 @@ export default function PlanDetail() {
         {content.steps && content.steps.length > 0 && (
           <div className="space-y-4">
             <div>
-              <h2 className="text-lg font-semibold">Step-by-Step Plan</h2>
+              <h2 className="text-lg font-semibold">{stepSectionTitle}</h2>
               <p className="text-sm text-muted-foreground">Check off each step as you complete it</p>
             </div>
             <Card>
@@ -414,7 +491,7 @@ export default function PlanDetail() {
           <div className="space-y-3">
             <div>
               <h2 className="text-lg font-semibold">Advisor Packet</h2>
-              <p className="text-sm text-muted-foreground">Bring this to your CPA, EA, or financial advisor</p>
+              <p className="text-sm text-muted-foreground">{advisorSectionSubtitle}</p>
             </div>
             <Card>
               <CardContent className="pt-4 pb-4">

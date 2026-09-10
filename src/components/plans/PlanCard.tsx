@@ -19,6 +19,7 @@ export function PlanCard({ plan, totalPlans = 0, selectionMode, isSelected, onTo
   const navigate = useNavigate();
   const updatePlan = useUpdatePlan();
   const content = plan.content;
+  const planLabel = content.plan_label || (content.plan_kind === 'wellness' ? 'Wellness Plan' : content.plan_kind === 'wealth' ? 'Wealth Plan' : null);
   
   const completedSteps = content.completedSteps?.length || 0;
   const totalSteps = content.steps?.length || 0;
@@ -110,6 +111,11 @@ export function PlanCard({ plan, totalPlans = 0, selectionMode, isSelected, onTo
           )}
           
           <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+            {planLabel && (
+              <Badge variant="secondary" className="text-xs">
+                {planLabel}
+              </Badge>
+            )}
             {plan.strategy_id && (
               <div className="flex items-center gap-1">
                 <FileText className="h-3 w-3" />

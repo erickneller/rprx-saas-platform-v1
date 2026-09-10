@@ -28,6 +28,13 @@ export interface PlanContent {
   disclaimer?: string;
   completedSteps?: number[];
   estimated_impact?: { low: number; high: number; source: string };
+  /** Assessment-derived starter-plan metadata. Internal source ids may remain financial/physical; labels are customer-facing. */
+  source_assessment_type?: 'financial' | 'physical';
+  plan_label?: string;
+  plan_kind?: 'wealth' | 'wellness' | 'strategy';
+  locked_roadmap?: string[];
+  professional_questions?: string[];
+  observation_prompts?: string[];
   /** Structured-plan v1 fields (optional, backward-compatible). */
   plan_schema?: 'v1';
   expected_result?: ExpectedResult;
@@ -101,6 +108,16 @@ function parsePlanContent(json: Json): PlanContent {
       estimated_impact: typeof obj.estimated_impact === 'object' && obj.estimated_impact !== null
         ? obj.estimated_impact as { low: number; high: number; source: string }
         : undefined,
+      source_assessment_type: obj.source_assessment_type === 'financial' || obj.source_assessment_type === 'physical'
+        ? obj.source_assessment_type
+        : undefined,
+      plan_label: typeof obj.plan_label === 'string' ? obj.plan_label : undefined,
+      plan_kind: obj.plan_kind === 'wealth' || obj.plan_kind === 'wellness' || obj.plan_kind === 'strategy'
+        ? obj.plan_kind
+        : undefined,
+      locked_roadmap: Array.isArray(obj.locked_roadmap) ? obj.locked_roadmap.map(String) : undefined,
+      professional_questions: Array.isArray(obj.professional_questions) ? obj.professional_questions.map(String) : undefined,
+      observation_prompts: Array.isArray(obj.observation_prompts) ? obj.observation_prompts.map(String) : undefined,
       plan_schema: obj.plan_schema === 'v1' ? 'v1' : undefined,
       expected_result: expected && typeof expected === 'object' && !Array.isArray(expected)
         ? {

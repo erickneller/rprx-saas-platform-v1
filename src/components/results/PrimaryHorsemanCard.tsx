@@ -20,7 +20,7 @@ export function PrimaryHorsemanCard({
           {getHorsemanLabel(primaryHorseman)}
         </p>
         <p className="text-foreground mt-1">
-          This area shows the highest pressure in your financial picture
+          This area shows the highest pressure in your wealth picture
         </p>
       </CardContent>
     </Card>;

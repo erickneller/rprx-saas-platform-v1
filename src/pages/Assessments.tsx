@@ -24,7 +24,7 @@ export default function Assessments() {
               <NetlifyAssessmentHistory />
             </section>
             <section className="space-y-3">
-              <h2 className="text-lg font-semibold text-foreground">Financial Assessments</h2>
+              <h2 className="text-lg font-semibold text-foreground">Wealth Assessments</h2>
               <AssessmentHistory />
             </section>
             <section className="space-y-3">

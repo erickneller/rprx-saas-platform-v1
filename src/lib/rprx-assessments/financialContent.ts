@@ -17,7 +17,7 @@ export function getFinancialResultPartition(answers: AnswerMap, freeCount?: numb
 
 export const financialAssessmentMeta = {
   id: 'fin',
-  label: 'Financial Success Assessment',
+  label: 'Wealth Success Assessment',
   eyebrow: 'Wealth Assessment',
   disclaimer:
     'Educational only. RPRx helps you identify areas to discuss with qualified tax, legal, insurance, education, and financial professionals.',

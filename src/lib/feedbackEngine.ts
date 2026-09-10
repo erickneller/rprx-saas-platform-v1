@@ -11,7 +11,7 @@ const feedbackTemplates: Record<HorsemanType, FeedbackContent> = {
   interest: {
     title: 'Your Primary Pressure: Interest & Debt',
     intro:
-      'Your assessment indicates that debt-related costs are creating the most significant pressure on your financial picture. This is common when payments accumulate across multiple accounts, each quietly consuming resources through interest charges.',
+      'Your assessment indicates that debt-related costs are creating the most significant pressure on your wealth picture. This is common when payments accumulate across multiple accounts, each quietly consuming resources through interest charges.',
     whatItMeans:
       'When debt payments command a large portion of income, less remains for building stability or responding to unexpected needs. The compounding nature of interest means this pressure can grow over time if not addressed systematically.',
     whyItMatters:
@@ -24,7 +24,7 @@ const feedbackTemplates: Record<HorsemanType, FeedbackContent> = {
     whatItMeans:
       'Without proactive awareness, tax obligations can take more than necessary from your income. Small inefficiencies accumulate over years, representing significant unrealized resources.',
     whyItMatters:
-      'Tax efficiency affects how much remains for debt management, insurance costs, and savings goals. Clarity here creates ripple effects across your entire financial picture.',
+      'Tax efficiency affects how much remains for debt management, insurance costs, and savings goals. Clarity here creates ripple effects across your entire wealth picture.',
   },
   insurance: {
     title: 'Your Primary Pressure: Insurance Costs',
