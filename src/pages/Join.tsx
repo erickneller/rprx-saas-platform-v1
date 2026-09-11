@@ -302,6 +302,9 @@ export default function Join() {
   }
 
   const videoUrl = pendingCompany?.join_video_url?.trim() || null;
+  const advisorReferralLabel = advisorRef || localStorage.getItem('pending_affiliate_ref') || '';
+  const signInRedirectParams = new URLSearchParams({ token });
+  if (advisorReferralLabel) signInRedirectParams.set('ref', advisorReferralLabel);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
@@ -333,6 +336,12 @@ export default function Join() {
           <p className="text-muted-foreground text-sm">
             Create your free account to join <span className="font-semibold text-foreground">{pendingCompany?.name}</span> on RPRx 4 Life.
           </p>
+          {advisorReferralLabel && (
+            <div className="rounded-lg border border-accent/30 bg-accent/10 px-3 py-2 text-sm text-foreground">
+              <span className="font-semibold">Advisor referral:</span>{' '}
+              <span className="break-all">{advisorReferralLabel}</span>
+            </div>
+          )}
         </div>
 
         {/* Sign-up form */}
@@ -430,7 +439,7 @@ export default function Join() {
 
         <p className="text-center text-xs text-muted-foreground">
           Already have an account?{' '}
-          <a href={`/auth?redirect=/join?token=${token}`} className="underline hover:text-foreground">
+          <a href={`/auth?redirect=${encodeURIComponent(`/join?${signInRedirectParams.toString()}`)}`} className="underline hover:text-foreground">
             Sign in
           </a>
         </p>

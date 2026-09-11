@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
+import { useCompany } from '@/hooks/useCompany';
+import { supabase } from '@/integrations/supabase/client';
 import { useDebtJourney } from '@/hooks/useDebtJourney';
 import { usePlans, useFocusPlan } from '@/hooks/usePlans';
 import { useDashboardConfig } from '@/hooks/useDashboardConfig';
@@ -28,6 +30,21 @@ export function DashboardContent() {
   const { user } = useAuth();
   const { data: assessments = [], isLoading } = useAssessmentHistory();
   const { profile, updateProfile } = useProfile();
+  const { company, membership } = useCompany();
+  const { data: attribution } = useQuery({
+    queryKey: ['affiliate-attribution', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('affiliate_attributions')
+        .select('affiliate_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data as { affiliate_id: string | null } | null;
+    },
+    enabled: !!user?.id,
+  });
   const { journey, debts, hasActiveJourney } = useDebtJourney();
   const { data: plans = [] } = usePlans();
   const { data: focusPlan } = useFocusPlan();
@@ -136,6 +153,24 @@ export function DashboardContent() {
         <>
           <>
             <DashboardStreakBar />
+            {company && (
+              <div className="rounded-xl border border-accent/30 bg-accent/10 p-4 shadow-sm">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      You're now connected to {company.name}.
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Company role: {membership?.role ?? profile?.company_role ?? 'member'}
+                      {attribution?.affiliate_id ? ` • Advisor referral: ${attribution.affiliate_id}` : ''}
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => navigate('/company-dashboard')}>
+                    View company
+                  </Button>
+                </div>
+              </div>
+            )}
             {cardsLoading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map(i => <Skeleton key={i} className="h-32 w-full rounded-lg" />)}
