@@ -195,7 +195,7 @@ Deno.serve(async (req) => {
     };
 
     const standardFields: Record<string, unknown> = {};
-    const customFields: Array<{ key: string; field_value: unknown }> = [];
+    const customFields: Array<{ key?: string; id?: string; field_value: unknown }> = [];
     const tags: string[] = [];
 
     for (const m of (mappings ?? []) as any[]) {
@@ -207,7 +207,11 @@ Deno.serve(async (req) => {
         const key = STANDARD_KEYS.has(m.ghl_field_key) ? m.ghl_field_key : m.ghl_field_key;
         standardFields[key] = transformed;
       } else if (m.ghl_target_type === "custom_field") {
-        customFields.push({ key: m.ghl_field_key, field_value: transformed });
+        const fieldRef = String(m.ghl_field_key || "").trim();
+        const isGhlFieldId = /^[A-Za-z0-9]{20}$/.test(fieldRef);
+        customFields.push(isGhlFieldId
+          ? { id: fieldRef, field_value: transformed }
+          : { key: fieldRef, field_value: transformed });
       } else if (m.ghl_target_type === "tag") {
         const tpl = m.ghl_field_key || "{value}";
         tags.push(tpl.replace("{value}", String(transformed)));
