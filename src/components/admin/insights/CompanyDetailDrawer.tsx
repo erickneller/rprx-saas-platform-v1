@@ -21,7 +21,7 @@ export function CompanyDetailDrawer({ company, onOpenChange }: Props) {
   const tierData = company
     ? [
         { name: 'Free', value: company.free_count },
-        { name: 'Partner', value: company.partner_count },
+        { name: 'Member', value: company.partner_count },
         { name: 'Pro', value: company.pro_count },
       ]
     : [];

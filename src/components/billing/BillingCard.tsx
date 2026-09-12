@@ -23,7 +23,7 @@ export function BillingCard() {
   const { requireUpgrade } = useUpgradeGate();
   const { copy } = useBillingCardSettings();
 
-  const tierLabel = tier === 'pro' ? 'Pro' : tier === 'partner' ? 'Partner' : 'Free';
+  const tierLabel = tier === 'pro' ? 'Pro' : tier === 'partner' ? 'Member' : 'Free';
 
   const targetFeature = isPartner ? 'virtual-advisor' : 'strategy-assistant';
   const footer = copy.footerNote.replace('{email}', copy.supportEmail);

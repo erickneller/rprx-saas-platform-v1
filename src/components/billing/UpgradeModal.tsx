@@ -52,7 +52,7 @@ export function UpgradeModal({ open, onOpenChange, initialPlan = 'partner', init
       const next = qc.getQueryData<string>(['subscription-tier', 'v2', user.id]);
 
       if (next && next !== 'free' && next !== startingTier) {
-        toast.success(`Welcome to RPRx ${next === 'pro' ? 'Pro' : 'Partner'}!`);
+        toast.success(`Welcome to RPRx ${next === 'pro' ? 'Pro' : 'Member'}!`);
         onOpenChange(false);
       }
     }, 3000);
@@ -87,7 +87,7 @@ export function UpgradeModal({ open, onOpenChange, initialPlan = 'partner', init
         <div className="px-6 pt-4 pb-3 border-b flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
           <Tabs value={plan} onValueChange={(v) => setPlan(v as PlanKey)}>
             <TabsList>
-              <TabsTrigger value="partner">Partner</TabsTrigger>
+              <TabsTrigger value="partner">Member</TabsTrigger>
               <TabsTrigger value="pro">Pro</TabsTrigger>
             </TabsList>
           </Tabs>

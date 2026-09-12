@@ -130,7 +130,7 @@ export default function Library() {
                   const source = resolveVideoSource(video.video_url);
 
                   if (locked) {
-                    const label = required === 'pro' ? 'Pro' : 'Partner';
+                    const label = required === 'pro' ? 'Pro' : 'Member';
                     return (
                       <Card key={video.id} className="flex flex-col overflow-hidden">
                         <AspectRatio ratio={16 / 9}>

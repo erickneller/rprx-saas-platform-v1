@@ -267,7 +267,7 @@ Deno.serve(async (req) => {
 
       const resendKey = Deno.env.get("RESEND_API_KEY");
       if (resendKey && actionLink) {
-        const tierLabel = tier === "pro" ? "Pro" : "Partner";
+        const tierLabel = tier === "pro" ? "Pro" : "Member";
         const html = `
           <div style="font-family:system-ui,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#ffffff;color:#0f172a">
             <h1 style="margin:0 0 12px 0;font-size:22px;">Welcome to RPRx ${tierLabel} 🎉</h1>

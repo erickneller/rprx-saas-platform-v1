@@ -117,7 +117,7 @@ export default function RprxSaasHome() {
               <ol className="wwh-steps">
                 <li><span><b>First,</b> take the assessments below to generate strategies and solutions to protect from the “Four Horsemen” and the “Lightning.”</span></li>
                 <li><span><b>Next,</b> implement the strategies and solutions with the help of the RPRx Partners.</span></li>
-                <li><span><b>Finally,</b> become a <a className="wwh-link" href="https://www.rprx.life" target="_blank" rel="noopener noreferrer">RPRx Member</a> for $97/ month. This will give the member access to the extensive RPRx Library of Resources to assist in implementation and daily new strategies and solutions to continually update and improve your RPRx wealth and health wellness program.</span></li>
+                <li><span><b>Finally,</b> become a <a className="wwh-link" href="https://www.rprx.life" target="_blank" rel="noopener noreferrer">RPRx Member</a> for $97/month. This will give the member access to the extensive RPRx Library of Resources to assist in implementation and daily new strategies and solutions to continually update and improve your RPRx wealth and health wellness program.</span></li>
               </ol>
             </div>
           </div>

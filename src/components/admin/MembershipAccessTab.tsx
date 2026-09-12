@@ -34,16 +34,16 @@ type GhlProductRow = {
 
 const TIERS: Array<{ value: AccessTier; label: string; description: string }> = [
   { value: 'free', label: 'Free', description: 'Everyone' },
-  { value: 'partner', label: 'Partner', description: 'Partner + Pro' },
+  { value: 'partner', label: 'Member', description: 'Member + Pro' },
   { value: 'pro', label: 'Pro', description: 'Pro only' },
 ];
 
 const PAID_TIERS: Array<{ value: 'partner' | 'pro'; label: string }> = [
-  { value: 'partner', label: 'Partner' },
+  { value: 'partner', label: 'Member' },
   { value: 'pro', label: 'Pro' },
 ];
 
-const PLAN_LABEL: Record<PlanKey, string> = { partner: 'Partner', pro: 'Pro' };
+const PLAN_LABEL: Record<PlanKey, string> = { partner: 'Member', pro: 'Pro' };
 const INTERVAL_LABEL: Record<IntervalKey, string> = { month: 'Monthly', year: 'Yearly' };
 
 function TierSelect({

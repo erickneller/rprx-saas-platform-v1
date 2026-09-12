@@ -125,7 +125,7 @@ const benefits = [
     icon: Palmtree,
     title: "Best Beach Giveaway",
     headline: "Quarterly Siesta Key Vacation Drawing",
-    body: "Every member is automatically entered into our quarterly Best Beach giveaway — a 4-day, 3-night Siesta Key beach vacation for two. Earn additional entries for every RPRx Partner you refer who becomes a member.",
+    body: "Every member is automatically entered into our quarterly Best Beach giveaway — a 4-day, 3-night Siesta Key beach vacation for two. Earn additional entries for every RPRx Member you refer who joins.",
   },
   {
     icon: Users,
@@ -223,7 +223,7 @@ export default function RprxW2() {
   useEffect(() => {
     const prevTitle = document.title;
     document.title =
-      "RPRx Partner Program for W2 Employees | Get a $2,000 Tax Credit";
+      "RPRx Member Program for W2 Employees | Get a $2,000 Tax Credit";
 
     const setMeta = (name: string, content: string, attr: "name" | "property" = "name") => {
       let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
@@ -240,7 +240,7 @@ export default function RprxW2() {
       "W2 employees: get a $2,000 tax credit within 24 hours, plus tax, mortgage, insurance and college strategies built by CPA Rick Darvis. $497/year or $49.97/mo.";
     const created: HTMLElement[] = [];
     created.push(setMeta("description", desc));
-    created.push(setMeta("og:title", "RPRx Partner Program for W2 Employees", "property"));
+    created.push(setMeta("og:title", "RPRx Member Program for W2 Employees", "property"));
     created.push(setMeta("og:description", desc, "property"));
     created.push(setMeta("og:type", "website", "property"));
 
@@ -280,7 +280,7 @@ export default function RprxW2() {
               <span className="text-[hsl(var(--w2-gold))]">Nobody is actually fighting for you.</span>
             </h1>
             <p className="mt-6 text-lg text-[hsl(var(--w2-ink))]/80 sm:text-xl">
-              The RPRx Partner Program gives W2 employees access to the same tax strategies wealthy business
+              The RPRx Member Program gives W2 employees access to the same tax strategies wealthy business
               owners have used for decades — starting with a{" "}
               <strong className="text-[hsl(var(--w2-navy))]">$2,000 tax credit delivered to you within
               24 hours</strong>{" "}
@@ -420,7 +420,7 @@ export default function RprxW2() {
                 <tr>
                   <th className="px-4 py-4 sm:px-6">Category</th>
                   <th className="px-4 py-4 sm:px-6">Typical W2 Employee</th>
-                  <th className="px-4 py-4 sm:px-6 text-[hsl(var(--w2-gold))]">RPRx Partner Member</th>
+                  <th className="px-4 py-4 sm:px-6 text-[hsl(var(--w2-gold))]">RPRx Member</th>
                 </tr>
               </thead>
               <tbody>
@@ -444,11 +444,11 @@ export default function RprxW2() {
             Introducing
           </p>
           <h2 className="mt-3 text-center font-serif text-3xl font-bold leading-tight text-[hsl(var(--w2-navy))] sm:text-4xl">
-            The RPRx Partner Program — the simplest way for W2 employees to start keeping more of what they earn
+            The RPRx Member Program — the simplest way for W2 employees to start keeping more of what they earn
           </h2>
           <div className="mx-auto mt-8 max-w-3xl space-y-5 text-lg text-[hsl(var(--w2-ink))]/85">
             <p>
-              The RPRx Partner Program is a <strong>$49.97/month</strong> membership (or <strong>$497/year</strong>)
+              The RPRx Member Program is a <strong>$49.97/month</strong> membership (or <strong>$497/year</strong>)
               that gives you access to the tax strategies, financial tools, and expert guidance that have previously
               only been available to wealthy business owners and high-income professionals.
             </p>
@@ -537,7 +537,7 @@ export default function RprxW2() {
       <section id="what" className="scroll-mt-16 bg-white py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="mx-auto max-w-3xl text-center font-serif text-3xl font-bold leading-tight text-[hsl(var(--w2-navy))] sm:text-4xl">
-            Everything included in your RPRx Partner membership
+            Everything included in your RPRx membership
           </h2>
 
           <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
@@ -641,7 +641,7 @@ export default function RprxW2() {
             {/* Monthly */}
             <div className="flex flex-col rounded-2xl border border-[hsl(var(--w2-navy))]/15 bg-white p-8">
               <p className="text-sm font-bold uppercase tracking-wider text-[hsl(var(--w2-ink))]/60">
-                RPRx Partner — Monthly
+                RPRx Member — Monthly
               </p>
               <p className="mt-3 font-serif text-5xl font-bold text-[hsl(var(--w2-navy))]">
                 $49.97<span className="text-base font-normal text-[hsl(var(--w2-ink))]/60">/month</span>
@@ -675,7 +675,7 @@ export default function RprxW2() {
                 ⭐ Best Value
               </span>
               <p className="text-sm font-bold uppercase tracking-wider text-[hsl(var(--w2-gold))]">
-                RPRx Partner — Annual
+                RPRx Member — Annual
               </p>
               <p className="mt-3 font-serif text-5xl font-bold text-[hsl(var(--w2-navy))]">
                 $497<span className="text-base font-normal text-[hsl(var(--w2-ink))]/60">/year</span>
@@ -731,7 +731,7 @@ export default function RprxW2() {
               financial aid on the table.
             </p>
             <p>
-              At <strong>$497 annually</strong>, the RPRx Partner Program returns your entire investment — in tax
+              At <strong>$497 annually</strong>, the RPRx Member Program returns your entire investment — in tax
               credits alone — within 24 hours.
             </p>
             <p>
@@ -783,7 +783,7 @@ export default function RprxW2() {
           <div className="mx-auto mt-8 max-w-2xl space-y-4 text-lg text-white/85">
             <p>You work too hard to keep giving it away.</p>
             <p>
-              The RPRx Partner Program exists because W2 employees deserve the same strategies that wealthy
+              The RPRx Member Program exists because W2 employees deserve the same strategies that wealthy
               business owners have used for decades.
             </p>
             <p className="font-semibold text-white">
@@ -817,7 +817,7 @@ export default function RprxW2() {
           <div className="flex flex-col items-start justify-between gap-6 border-b border-white/10 pb-8 md:flex-row md:items-center">
             <div className="flex items-center gap-2 font-serif text-base font-bold text-white">
               <span className="inline-block h-2 w-2 rounded-full bg-[hsl(var(--w2-gold))]" />
-              RPRx Partner Program
+              RPRx Member Program
             </div>
             <div className="flex flex-wrap gap-6 text-sm">
               <a href="/privacy" className="hover:text-white">Privacy Policy</a>
@@ -827,7 +827,7 @@ export default function RprxW2() {
             </div>
           </div>
           <p className="mt-6 text-xs leading-relaxed text-white/55">
-            Disclaimer: Tax results vary by individual situation. RPRx Partner Program members receive K1
+            Disclaimer: Tax results vary by individual situation. RPRx Member Program members receive K1
             documentation prepared in accordance with IRS regulations. Consult with a qualified tax professional
             regarding your specific tax situation. Rick Darvis CPA.
           </p>

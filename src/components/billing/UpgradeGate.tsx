@@ -24,7 +24,7 @@ export function UpgradeGate({ feature, children, fallback, preview }: UpgradeGat
 
   if (!locked) return <>{children}</>;
 
-  const tierLabel = featureRequiredTier(feature) === 'pro' ? 'Pro' : 'Partner';
+  const tierLabel = featureRequiredTier(feature) === 'pro' ? 'Pro' : 'Member';
 
   const defaultFallback = (
     <Card className="p-6 text-center border-dashed">

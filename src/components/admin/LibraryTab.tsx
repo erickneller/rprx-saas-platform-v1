@@ -289,7 +289,7 @@ export function LibraryTab() {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="free">Free (everyone)</SelectItem>
-                  <SelectItem value="partner">Partner & Pro</SelectItem>
+                  <SelectItem value="partner">Member & Pro</SelectItem>
                   <SelectItem value="pro">Pro only</SelectItem>
                 </SelectContent>
               </Select>

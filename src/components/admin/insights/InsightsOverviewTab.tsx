@@ -30,7 +30,7 @@ export function InsightsOverviewTab() {
   const cards = [
     { label: 'Total Users', value: users.length, icon: Users },
     { label: 'Free', value: totals.tiers.free, icon: Users },
-    { label: 'Partner', value: totals.tiers.partner, icon: Crown },
+    { label: 'Member', value: totals.tiers.partner, icon: Crown },
     { label: 'Pro', value: totals.tiers.pro, icon: Crown },
     { label: 'Companies', value: companies.length, icon: Building2 },
     { label: 'Active (7d, company members)', value: totals.active7, icon: Activity },

@@ -28,7 +28,7 @@ interface CustomCardDialogProps {
 
 const TIERS = [
   { value: 'free', label: 'Free' },
-  { value: 'partner', label: 'Partner' },
+  { value: 'partner', label: 'Member' },
   { value: 'pro', label: 'Pro' },
 ];
 

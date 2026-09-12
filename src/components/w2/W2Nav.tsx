@@ -23,7 +23,7 @@ export default function W2Nav() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <a href="#top" className="flex items-center gap-2 font-serif text-lg font-bold tracking-tight">
           <span className="inline-block h-2 w-2 rounded-full bg-[hsl(var(--w2-gold))]" />
-          RPRx Partner Program
+          RPRx Member Program
         </a>
         <nav className="hidden items-center gap-8 md:flex">
           {links.map((l) => (
