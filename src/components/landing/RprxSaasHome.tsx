@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import rprxLogo from '@/assets/rprx-logo.png';
+import { RPRX_FULL_IMPLEMENTATION_PAYMENT_URL, RPRX_MEMBERSHIP_PAYMENT_URL } from '@/lib/rprxPaymentLinks';
 
 const FOUR_HORSEMEN_VIDEO = 'https://storage.googleapis.com/msgsndr/3JQXZeyGRlWoI7GauXaH/media/692b3e56aaad913a60baee2f.mp4';
 
@@ -117,7 +118,7 @@ export default function RprxSaasHome() {
               <ol className="wwh-steps">
                 <li><span><b>First,</b> take the assessments below to generate strategies and solutions to protect from the “Four Horsemen” and the “Lightning.”</span></li>
                 <li><span><b>Next,</b> implement the strategies and solutions with the help of the RPRx Partners.</span></li>
-                <li><span><b>Finally,</b> become a <a className="wwh-link" href="https://www.rprx.life" target="_blank" rel="noopener noreferrer">RPRx Member</a> for $97/month. This will give the member access to the extensive RPRx Library of Resources to assist in implementation and daily new strategies and solutions to continually update and improve your RPRx wealth and health wellness program.</span></li>
+                <li><span><b>Finally,</b> become an <a className="wwh-link" href={RPRX_MEMBERSHIP_PAYMENT_URL} target="_blank" rel="noopener noreferrer">RPRx Member</a> for $97/month. This gives the member access to the extensive RPRx Library of Resources to assist in implementation and daily new strategies and solutions to continually update and improve your RPRx wealth and health wellness program. Prefer full done-for-you support? Use the <a className="wwh-link" href={RPRX_FULL_IMPLEMENTATION_PAYMENT_URL} target="_blank" rel="noopener noreferrer">Full Done For You RPRx Implementation and Tax Filing</a> option.</span></li>
               </ol>
             </div>
           </div>
@@ -159,7 +160,6 @@ export default function RprxSaasHome() {
       <footer>
         <div className="wrap-wide">
           <p className="partner-line"><a href="mailto:matt@rprx.life?subject=Become%20an%20RPRx%20Partner">Become an RPRx Partner</a> — members are matched to you by what they actually need.</p>
-          <p className="old-home-note"><Link to="/old-home">Old SaaS home page</Link> is preserved here for comparison while this new home becomes the production face.</p>
           <p className="disclaimer">RPRx is a financial and physical wellness education program — not financial, tax, legal, or investment advice, and not medical advice, diagnosis, or treatment. If you're in crisis, call or text 988 (US).</p>
         </div>
       </footer>

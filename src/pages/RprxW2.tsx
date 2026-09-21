@@ -31,8 +31,9 @@ import {
   CHECKOUT_MONTHLY_URL,
   MEMBER_LOGIN_URL,
 } from "@/lib/w2Config";
+import { RPRX_FULL_IMPLEMENTATION_PAYMENT_URL } from "@/lib/rprxPaymentLinks";
 
-const ANNUAL_CTA = "Get My $2,000 Tax Credit — Join Annual for $497";
+const ANNUAL_CTA = "Join RPRx Membership — $97/month";
 
 const horsemen = [
   {
@@ -77,7 +78,7 @@ const benefits = [
     icon: FileCheck,
     title: "The $2,000 Tax Credit (K1)",
     headline: "Your Membership Pays For Itself Immediately",
-    body: "Via our K1 partnership, every annual member receives a $2,000 tax credit they can apply directly to their federal tax return. Need more? Members in good standing can upgrade to Silver, Gold, Platinum, or Diamond tiers for additional credits at any time.",
+    body: "Via our K1 partnership, members can receive tax-credit documentation that they review with their CPA or the RPRx filing service. Need more? Members in good standing can upgrade to Silver, Gold, Platinum, or Diamond tiers for additional credits at any time.",
   },
   {
     icon: Landmark,
@@ -178,7 +179,7 @@ const testimonials = [
 const faqs = [
   {
     q: "What exactly is the $2,000 tax credit and how does it work?",
-    a: "You become a member of our K1 partnership. At year-end (or within 24 hours for annual members), you receive a K1 tax form showing a $2,000 credit that can be applied directly to your federal tax return — reducing your tax liability dollar for dollar. Your CPA or our RPRx filing service applies it at tax time.",
+    a: "You become a member of our K1 partnership. You receive K1/tax-credit documentation to review with your CPA or with the RPRx filing service at tax time.",
   },
   {
     q: "Is this legal?",
@@ -202,7 +203,7 @@ const faqs = [
   },
   {
     q: "What if I just want to start monthly?",
-    a: "Monthly membership includes all program benefits. The primary difference is timing — monthly members receive their K1 at year-end filing rather than within 24 hours. You can upgrade to annual at any time.",
+    a: "Monthly membership includes the public RPRx member benefits and gives you the path to implementation support. Full done-for-you implementation is available separately for members who want tax filing support handled for them.",
   },
 ];
 
@@ -223,7 +224,7 @@ export default function RprxW2() {
   useEffect(() => {
     const prevTitle = document.title;
     document.title =
-      "RPRx Member Program for W2 Employees | Get a $2,000 Tax Credit";
+      "RPRx Member Program for W2 Employees | $97/month";
 
     const setMeta = (name: string, content: string, attr: "name" | "property" = "name") => {
       let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
@@ -237,7 +238,7 @@ export default function RprxW2() {
     };
 
     const desc =
-      "W2 employees: get a $2,000 tax credit within 24 hours, plus tax, mortgage, insurance and college strategies built by CPA Rick Darvis. $497/year or $49.97/mo.";
+      "W2 employees: access tax, mortgage, insurance and college strategies built by CPA Rick Darvis through RPRx Membership at $97/month.";
     const created: HTMLElement[] = [];
     created.push(setMeta("description", desc));
     created.push(setMeta("og:title", "RPRx Member Program for W2 Employees", "property"));
@@ -282,9 +283,8 @@ export default function RprxW2() {
             <p className="mt-6 text-lg text-[hsl(var(--w2-ink))]/80 sm:text-xl">
               The RPRx Member Program gives W2 employees access to the same tax strategies wealthy business
               owners have used for decades — starting with a{" "}
-              <strong className="text-[hsl(var(--w2-navy))]">$2,000 tax credit delivered to you within
-              24 hours</strong>{" "}
-              of joining.
+              <strong className="text-[hsl(var(--w2-navy))]">member tax-strategy resources and implementation support</strong>{" "}
+              after joining.
             </p>
             <div className="mt-8 flex flex-col items-start gap-3">
               <PrimaryCta />
@@ -294,12 +294,12 @@ export default function RprxW2() {
                 rel="noopener noreferrer"
                 className="text-sm font-medium text-[hsl(var(--w2-navy))] underline-offset-4 hover:underline"
               >
-                Or start monthly at $49.97 — upgrade anytime
+                Start RPRx Membership at $97/month
               </a>
             </div>
             <ul className="mt-6 space-y-2 text-sm text-[hsl(var(--w2-ink))]/80">
               {[
-                "K1 delivered within 24 hours of completing your agreement",
+                "Tax-strategy resources unlocked after checkout",
                 "30-minute setup",
                 "Cancel anytime",
               ].map((t) => (
@@ -322,8 +322,8 @@ export default function RprxW2() {
               />
             </div>
             <div className="absolute -bottom-4 -right-4 hidden rounded-xl bg-[hsl(var(--w2-navy))] px-5 py-3 text-white shadow-xl sm:block">
-              <p className="text-xs uppercase tracking-wider text-[hsl(var(--w2-gold))]">Day-One Math</p>
-              <p className="font-serif text-2xl font-bold">+$1,503</p>
+              <p className="text-xs uppercase tracking-wider text-[hsl(var(--w2-gold))]">Member Path</p>
+              <p className="font-serif text-2xl font-bold">$97/mo</p>
             </div>
           </div>
         </div>
@@ -448,7 +448,7 @@ export default function RprxW2() {
           </h2>
           <div className="mx-auto mt-8 max-w-3xl space-y-5 text-lg text-[hsl(var(--w2-ink))]/85">
             <p>
-              The RPRx Member Program is a <strong>$49.97/month</strong> membership (or <strong>$497/year</strong>)
+              The RPRx Member Program is a <strong>$97/month</strong> membership
               that gives you access to the tax strategies, financial tools, and expert guidance that have previously
               only been available to wealthy business owners and high-income professionals.
             </p>
@@ -458,7 +458,7 @@ export default function RprxW2() {
             </p>
             <p>No complicated setup. No confusing financial jargon. No expensive advisor fees upfront.</p>
             <p className="font-semibold text-[hsl(var(--w2-navy))]">
-              You join. You complete a 30-minute agreement. Your $2,000 tax credit K1 is delivered within 24 hours.
+              You join. You complete onboarding. Your member resources and next-step implementation path unlock after checkout.
               You are ahead before you watch a single video.
             </p>
           </div>
@@ -484,7 +484,7 @@ export default function RprxW2() {
       <section id="how" className="scroll-mt-16 bg-[hsl(var(--w2-navy))] py-20 text-white sm:py-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <h2 className="mx-auto max-w-3xl text-center font-serif text-3xl font-bold leading-tight sm:text-4xl">
-            Three steps. 30 minutes. <span className="text-[hsl(var(--w2-gold))]">$2,000</span> in your hands within 24 hours.
+            Three steps. About 30 minutes. <span className="text-[hsl(var(--w2-gold))]">RPRx</span> resources unlocked for members.
           </h2>
 
           <div className="mt-14 grid gap-8 md:grid-cols-3">
@@ -492,7 +492,7 @@ export default function RprxW2() {
               {
                 n: "1",
                 t: "Join",
-                b: "Choose annual ($497) or monthly ($49.97). Annual members receive their K1 tax credit document within 24 hours. Complete your membership agreement and certification in about 30 minutes.",
+                b: "Join the $97/month RPRx Membership. Complete your membership agreement and certification in about 30 minutes, then use the portal to coordinate next tax-strategy steps with qualified professionals.",
               },
               {
                 n: "2",
@@ -523,10 +523,10 @@ export default function RprxW2() {
               <Sparkles className="h-4 w-4" /> The math is simple
             </p>
             <ul className="mt-4 space-y-1 font-serif text-lg sm:text-xl">
-              <li>Annual membership = <strong>$497</strong></li>
-              <li>Tax credit received = <strong>$2,000</strong></li>
+              <li>RPRx Membership = <strong>$97/month</strong></li>
+              <li>Strategy review and implementation resources unlocked for members</li>
               <li className="border-t border-[hsl(var(--w2-navy))]/20 pt-2">
-                Net gain on day one = <strong>$1,503</strong> — before you do anything else
+                Next step = <strong>member implementation support</strong>
               </li>
             </ul>
           </div>
@@ -634,7 +634,7 @@ export default function RprxW2() {
       <section id="pricing" className="scroll-mt-16 bg-white py-20 sm:py-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <h2 className="mx-auto max-w-3xl text-center font-serif text-3xl font-bold leading-tight text-[hsl(var(--w2-navy))] sm:text-4xl">
-            Choose your path — both pay for themselves immediately
+            Choose your RPRx path
           </h2>
 
           <div className="mt-14 grid gap-6 md:grid-cols-2">
@@ -644,14 +644,14 @@ export default function RprxW2() {
                 RPRx Member — Monthly
               </p>
               <p className="mt-3 font-serif text-5xl font-bold text-[hsl(var(--w2-navy))]">
-                $49.97<span className="text-base font-normal text-[hsl(var(--w2-ink))]/60">/month</span>
+                $97<span className="text-base font-normal text-[hsl(var(--w2-ink))]/60">/month</span>
               </p>
               <ul className="mt-6 flex-1 space-y-3 text-sm text-[hsl(var(--w2-ink))]/85">
                 {[
                   "$2,000 tax credit K1 at year-end filing",
                   "All member benefits included",
                   "Cancel anytime",
-                  "Upgrade to annual anytime to receive K1 within 24 hours",
+                  "Use member resources to prepare for tax-professional review",
                 ].map((x) => (
                   <li key={x} className="flex items-start gap-2">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(var(--w2-gold))]" />
@@ -669,25 +669,25 @@ export default function RprxW2() {
               </a>
             </div>
 
-            {/* Annual */}
+            {/* Full implementation */}
             <div className="relative flex flex-col rounded-2xl border-2 border-[hsl(var(--w2-gold))] bg-gradient-to-br from-white to-[hsl(var(--w2-cream))] p-8 shadow-xl">
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[hsl(var(--w2-gold))] px-4 py-1 text-xs font-bold uppercase tracking-wider text-[hsl(var(--w2-navy))]">
                 ⭐ Best Value
               </span>
               <p className="text-sm font-bold uppercase tracking-wider text-[hsl(var(--w2-gold))]">
-                RPRx Member — Annual
+                Full Done For You Support
               </p>
               <p className="mt-3 font-serif text-5xl font-bold text-[hsl(var(--w2-navy))]">
-                $497<span className="text-base font-normal text-[hsl(var(--w2-ink))]/60">/year</span>
+                $5,997<span className="text-base font-normal text-[hsl(var(--w2-ink))]/60"> one-time</span>
               </p>
-              <p className="text-sm text-[hsl(var(--w2-ink))]/60">save $102 vs monthly</p>
+              <p className="text-sm text-[hsl(var(--w2-ink))]/60">Complete RPRx Implementation and Tax Filing</p>
               <ul className="mt-6 flex-1 space-y-3 text-sm text-[hsl(var(--w2-ink))]/85">
                 {[
-                  "$2,000 tax credit K1 within 24 hours",
+                  "Full done-for-you implementation support",
                   "All member benefits included",
-                  "1 free RPRx Advisor consultation",
-                  "Automatically entered in Best Beach quarterly giveaway",
-                  "20% referral commissions activated",
+                  "Tax filing support included",
+                  "Customer-facing implementation handoff",
+                  "Uses the approved RPRx full implementation checkout",
                 ].map((x) => (
                   <li key={x} className="flex items-start gap-2">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(var(--w2-gold))]" />
@@ -696,25 +696,23 @@ export default function RprxW2() {
                 ))}
               </ul>
               <p className="mt-6 rounded-lg bg-[hsl(var(--w2-navy))] p-4 text-center text-sm text-white">
-                You pay $497. You receive $2,000 within 24 hours.
+                You can choose self-guided membership or full implementation support.
                 <br />
-                <strong className="text-[hsl(var(--w2-gold))]">Net positive: $1,503 on day one.</strong>
+                <strong className="text-[hsl(var(--w2-gold))]">Full implementation checkout: $5,997 one-time.</strong>
               </p>
               <a
-                href={CHECKOUT_ANNUAL_URL}
+                href={RPRX_FULL_IMPLEMENTATION_PAYMENT_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-6 inline-flex items-center justify-center rounded-full bg-[hsl(var(--w2-gold))] px-6 py-3 text-sm font-bold text-[hsl(var(--w2-navy))] shadow-md transition-all hover:-translate-y-0.5 hover:bg-[hsl(var(--w2-gold-soft))]"
               >
-                Get My $2,000 Tax Credit →
+                Start Full Implementation →
               </a>
             </div>
           </div>
 
           <p className="mx-auto mt-10 max-w-2xl text-center text-base text-[hsl(var(--w2-ink))]/80">
-            Before you watch a single video, read a single strategy, or make a single referral — you are already{" "}
-            <strong className="text-[hsl(var(--w2-navy))]">$1,503 ahead</strong>. This is not a course. This is not
-            a promise. This is a K1 document with your name on it, applied to your actual tax return.
+            Start with the $97/month membership, or choose the full done-for-you implementation path if you want filing support included.
           </p>
         </div>
       </section>
@@ -731,8 +729,7 @@ export default function RprxW2() {
               financial aid on the table.
             </p>
             <p>
-              At <strong>$497 annually</strong>, the RPRx Member Program returns your entire investment — in tax
-              credits alone — within 24 hours.
+              At <strong>$97/month</strong>, the RPRx Member Program gives members access to RPRx implementation resources, strategy education, and next-step support.
             </p>
             <p>
               If for any reason you feel the program is not right for you within your first 30 days, contact us and
@@ -787,7 +784,7 @@ export default function RprxW2() {
               business owners have used for decades.
             </p>
             <p className="font-semibold text-white">
-              $497. 30-minute setup. $2,000 tax credit in your hands within 24 hours.
+              $97/month. 30-minute setup. RPRx implementation resources unlocked for members.
             </p>
           </div>
           <div className="mt-10 flex flex-col items-center gap-3">
@@ -798,7 +795,7 @@ export default function RprxW2() {
               rel="noopener noreferrer"
               className="text-sm text-white/70 underline-offset-4 hover:text-white hover:underline"
             >
-              Or start monthly at $49.97 — upgrade anytime
+              Start RPRx Membership at $97/month
             </a>
           </div>
           <div className="mt-12 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-white/60">

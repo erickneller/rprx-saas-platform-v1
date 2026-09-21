@@ -44,7 +44,7 @@ export default function W2Nav() {
             showCta ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
         >
-          Get My $2,000 Tax Credit →
+Join RPRx Membership →
         </a>
       </div>
     </header>

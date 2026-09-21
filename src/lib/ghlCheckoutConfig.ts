@@ -1,23 +1,25 @@
-// GHL order form URLs — one per plan/interval combo.
-// Replace with the live URLs from your GHL funnel/order forms.
-// The URL should accept ?email, ?user_id, and ?ref query params for prefill + affiliate tracking.
+// GHL/FastPayDirect order form URLs — one per plan/interval combo.
+// Current approved public payment links are FastPayDirect links under links.darvisnutter.com.
+// They are intentionally used as safe defaults so the app never falls back to REPLACE_* placeholders.
+
+import { RPRX_FULL_IMPLEMENTATION_PAYMENT_URL, RPRX_MEMBERSHIP_PAYMENT_URL } from './rprxPaymentLinks';
 
 export type PlanKey = 'partner' | 'pro';
 export type IntervalKey = 'month' | 'year';
 
 export const GHL_CHECKOUT_URLS: Record<PlanKey, Record<IntervalKey, string>> = {
   partner: {
-    month: 'https://link.rprx4life.com/widget/form/REPLACE_PARTNER_MONTH',
-    year:  'https://link.rprx4life.com/widget/form/REPLACE_PARTNER_YEAR',
+    month: RPRX_MEMBERSHIP_PAYMENT_URL,
+    year: RPRX_MEMBERSHIP_PAYMENT_URL,
   },
   pro: {
-    month: 'https://link.rprx4life.com/widget/form/REPLACE_PRO_MONTH',
-    year:  'https://link.rprx4life.com/widget/form/REPLACE_PRO_YEAR',
+    month: RPRX_FULL_IMPLEMENTATION_PAYMENT_URL,
+    year: RPRX_FULL_IMPLEMENTATION_PAYMENT_URL,
   },
 };
 
 // Public-facing funnel page for cold (logged-out) traffic. Affiliate ?ref= is appended automatically.
-export const GHL_PUBLIC_FUNNEL_URL = 'https://link.rprx4life.com/pricing';
+export const GHL_PUBLIC_FUNNEL_URL = RPRX_MEMBERSHIP_PAYMENT_URL;
 
 export function buildCheckoutUrl(
   plan: PlanKey,
