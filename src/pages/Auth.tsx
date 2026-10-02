@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import rprxLogo from '@/assets/rprx-logo.png';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
@@ -33,8 +33,12 @@ type AuthView = 'login' | 'forgot-password';
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, loading, signIn, signUp, signInWithGoogle, resetPasswordForEmail } = useAuth();
   const justSignedUp = useRef(false);
+  const requestedView = searchParams.get('view') === 'signup' || searchParams.get('reason') === 'assessment-results' ? 'signup' : 'login';
+  const isAssessmentResultsGate = searchParams.get('reason') === 'assessment-results';
+  const [authTab, setAuthTab] = useState<'login' | 'signup'>(requestedView);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -75,6 +79,10 @@ const Auth = () => {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    setAuthTab(requestedView);
+  }, [requestedView]);
 
   useEffect(() => {
     if (!loading && user && !justSignedUp.current) {
@@ -223,7 +231,11 @@ const Auth = () => {
             />
           </div>
           <CardTitle className="text-2xl font-bold">RPRx 4 Life</CardTitle>
-          <CardDescription>Sign in to your account or create a new one</CardDescription>
+          <CardDescription>
+            {isAssessmentResultsGate
+              ? 'Create your free account to unlock and save your assessment results.'
+              : 'Sign in to your account or create a new one'}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -264,7 +276,7 @@ const Auth = () => {
             </div>
           </div>
 
-          <Tabs defaultValue="login" className="w-full mt-4">
+          <Tabs value={authTab} onValueChange={(value) => setAuthTab(value as 'login' | 'signup')} className="w-full mt-4">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>

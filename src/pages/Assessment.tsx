@@ -22,7 +22,7 @@ const Assessment = () => {
     );
   }
 
-  if (!user) {
+  if (!user && !useNetlifyEngine) {
     return <Navigate to={getAuthPathForCurrentRoute()} replace />;
   }
 

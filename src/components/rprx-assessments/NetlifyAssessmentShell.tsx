@@ -18,6 +18,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useNetlifyAssessmentPersistence } from '@/hooks/useNetlifyAssessmentPersistence';
 import { useUpgradeGate } from '@/contexts/UpgradeGateContext';
+import { useAuth } from '@/hooks/useAuth';
 
 type Mode = 'financial' | 'physical';
 
@@ -85,6 +86,14 @@ const financialPartnerMatches = [
   },
 ];
 
+const PENDING_ASSESSMENT_KEY = 'rprx-pending-assessment-result';
+
+type PendingAssessmentResult = {
+  mode: Mode;
+  answers: AnswerMap;
+  createdAt: string;
+};
+
 export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclaimer, sections, questions, onExit }: Props) {
   const location = useLocation();
   const editDraft = useMemo(() => {
@@ -106,6 +115,7 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
   const [editingResultId] = useState<string | null>(() => editDraft?.id ?? null);
   const [starterPlanId, setStarterPlanId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { requireUpgrade } = useUpgradeGate();
   const { saveResult, addStarterPlan } = useNetlifyAssessmentPersistence();
 
@@ -147,6 +157,24 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
 
   const handleSubmit = async () => {
     const partition = partitionResults<FinancialTheme | PhysicalQuestionMatch>(matches as readonly (FinancialTheme | PhysicalQuestionMatch)[], freeResultCount);
+
+    if (!user) {
+      try {
+        const pending: PendingAssessmentResult = {
+          mode,
+          answers,
+          createdAt: new Date().toISOString(),
+        };
+        window.sessionStorage.setItem(PENDING_ASSESSMENT_KEY, JSON.stringify(pending));
+      } catch (err) {
+        console.warn('Could not preserve pending RPRx assessment before signup:', err);
+      }
+
+      const returnTo = `${location.pathname}${location.search}`;
+      navigate(`/auth?next=${encodeURIComponent(returnTo)}&view=signup&reason=assessment-results`);
+      return;
+    }
+
     setSubmitted(true);
     saveResult.mutate({
       resultId: editingResultId,
@@ -156,6 +184,41 @@ export function NetlifyAssessmentShell({ mode, title, eyebrow, subtitle, disclai
       partition,
     });
   };
+
+  useEffect(() => {
+    if (!user || submitted || typeof window === 'undefined') return;
+
+    const raw = window.sessionStorage.getItem(PENDING_ASSESSMENT_KEY);
+    if (!raw) return;
+
+    let pending: PendingAssessmentResult | null = null;
+    try {
+      pending = JSON.parse(raw) as PendingAssessmentResult;
+    } catch {
+      window.sessionStorage.removeItem(PENDING_ASSESSMENT_KEY);
+      return;
+    }
+
+    if (!pending?.answers || pending.mode !== mode) return;
+
+    const restoredAnswers = pruneHiddenAnswers(questions, pending.answers);
+    const restoredMatches = mode === 'financial' ? getFinancialMatches(restoredAnswers) : getPhysicalMatches(restoredAnswers);
+    const restoredPartition = partitionResults<FinancialTheme | PhysicalQuestionMatch>(
+      restoredMatches as readonly (FinancialTheme | PhysicalQuestionMatch)[],
+      mode === 'financial' ? restoredMatches.length : 3,
+    );
+
+    setAnswers(restoredAnswers);
+    setSubmitted(true);
+    window.sessionStorage.removeItem(PENDING_ASSESSMENT_KEY);
+    saveResult.mutate({
+      resultId: null,
+      mode,
+      answers: restoredAnswers,
+      matches: restoredMatches as (FinancialTheme | PhysicalQuestionMatch)[],
+      partition: restoredPartition,
+    });
+  }, [mode, questions, saveResult, submitted, user]);
 
   useEffect(() => {
     if (submitted) window.scrollTo({ top: 0, behavior: 'smooth' });

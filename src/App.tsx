@@ -61,7 +61,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL === '/' ? undefined : import.meta.env.BASE_URL.replace(/\/$/, '')}>
         <AuthProvider>
         <NavigationBlockerProvider>
         <UpgradeGateProvider>
@@ -77,7 +77,7 @@ const App = () => (
           <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
           <Route path="/wizard" element={<ProtectedRoute><WizardGuard><Wizard /></WizardGuard></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><WizardGuard><Dashboard /></WizardGuard></ProtectedRoute>} />
-          <Route path="/assessment" element={<ProtectedRoute><Assessment /></ProtectedRoute>} />
+          <Route path="/assessment" element={<Assessment />} />
           <Route path="/assessment/edit/:id" element={<ProtectedRoute><Assessment /></ProtectedRoute>} />
           <Route path="/results/:id" element={<ProtectedRoute><WizardGuard><Results /></WizardGuard></ProtectedRoute>} />
           <Route element={<UpgradeRouteGuard feature="strategy-assistant" />}>

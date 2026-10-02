@@ -121,7 +121,7 @@ const HealthAssessment = () => {
     );
   }
 
-  if (!embedded && !user) {
+  if (!embedded && !user && !useNetlifyEngine) {
     return <Navigate to={getAuthPathForCurrentRoute()} replace />;
   }
 
