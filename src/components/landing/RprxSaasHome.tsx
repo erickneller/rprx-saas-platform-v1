@@ -129,7 +129,7 @@ export default function RprxSaasHome() {
             <div className="sec-head">
               <span className="eyebrow">Choose your path</span>
               <h2 id="fork-h">Where do you want to start?</h2>
-              <p>Both assessments are free — a few minutes of yes-or-no questions, no dollar figures, no medical records. Sign in with your name and email, and your top matched areas are open at no cost. Do one now and the other whenever you're ready; they live under the same RPRx profile.</p>
+              <p>Both assessments are free — a few minutes of yes-or-no questions, no dollar figures, no medical records. Answer first, then create your free account to unlock and save your top matched areas. Do one now and the other whenever you're ready; they live under the same RPRx profile.</p>
             </div>
 
             <div className="path-grid">
@@ -138,7 +138,7 @@ export default function RprxSaasHome() {
                 <h3 id="fin-h">2 Clicks to take the Four Horsemen out of your life</h3>
                 <p className="who">Answer the yes-or-no questions and RPRx will match your situation with 500+ strategies.</p>
                 <div className="cta">
-                  <Link className="btn btn-primary" to="/auth?next=/assessment">Wealth Assessment <span className="arr">→</span></Link>
+                  <Link className="btn btn-primary" to="/assessment">Wealth Assessment <span className="arr">→</span></Link>
                   <span className="time">Free · about 3 minutes · no financial data needed</span>
                 </div>
               </article>
@@ -148,7 +148,7 @@ export default function RprxSaasHome() {
                 <h3 id="phys-h">2 Clicks to take the Lightning out of your life</h3>
                 <p className="who">Answer the yes-or-no questions and RPRx can support you in that area.</p>
                 <div className="cta">
-                  <Link className="btn btn-primary" to="/auth?next=/health-assessment">Health Assessment <span className="arr">→</span></Link>
+                  <Link className="btn btn-primary" to="/health-assessment">Health Assessment <span className="arr">→</span></Link>
                   <span className="time">Free · about 3 minutes · no health data collected</span>
                 </div>
               </article>
