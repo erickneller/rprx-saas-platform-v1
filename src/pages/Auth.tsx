@@ -13,6 +13,22 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { formatPhone, isValidUSPhone } from '@/lib/phoneFormat';
 import { getAuthPageDestination } from '@/lib/authRedirect';
 
+const PENDING_ASSESSMENT_KEY = 'rprx-pending-assessment-result';
+
+function getAssessmentGateDestination() {
+  const explicitNext = getAuthPageDestination('');
+  if (explicitNext) return explicitNext;
+
+  try {
+    const raw = window.sessionStorage.getItem(PENDING_ASSESSMENT_KEY);
+    if (!raw) return '/';
+    const pending = JSON.parse(raw) as { mode?: string };
+    return pending.mode === 'physical' ? '/health-assessment' : '/assessment';
+  } catch {
+    return '/';
+  }
+}
+
 const authSchema = z.object({
   email: z.string().trim().email({ message: 'Please enter a valid email address' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
@@ -86,7 +102,7 @@ const Auth = () => {
 
   useEffect(() => {
     if (!loading && user && !justSignedUp.current) {
-      navigate(getAuthPageDestination('/'), { replace: true });
+      navigate(getAssessmentGateDestination(), { replace: true });
     }
   }, [user, loading, navigate]);
 
@@ -135,7 +151,7 @@ const Auth = () => {
           const { data: { session } } = await supabase.auth.getSession();
           if (session) {
             justSignedUp.current = true;
-            navigate(getAuthPageDestination('/'), { replace: true });
+            navigate(getAssessmentGateDestination(), { replace: true });
             return;
           }
 
